@@ -49,7 +49,7 @@ export default {
 		// 增加规格卡片
 		addSkuCard(state){
 			state.sku_card.push({
-				name: "名称", // 规格名称
+				name: "", // 规格名称
 				type: 0,      // 规格类型 0无 1颜色 2图片
 				list:[        // 规格属性列表
 					{

@@ -20,12 +20,13 @@
 		</div>
 		<div class="card-body">
 			<!-- 规格属性列表 -->
-			<sku-card-children :type="item.type"></sku-card-children>
-			
-			
+			<div class="d-flex align-items-center flex-wrap">
+				<sku-card-children v-for="(item2,index2) in list" :key='index2' :type="item.type" :item='item2' :index1='index' :index2='index2'
+				v-dragging='{item: item2, list: list, group: "index" + index}'></sku-card-children>
+			</div>
 			<!-- 增加规格属性 -->
 			<div class="mt-2">
-				<el-button type="text" size="mini" icon="el-icon-plus">增加规格值
+				<el-button type="text" size="mini" icon="el-icon-plus" @click='addSkuValue(index)'>增加规格值
 				</el-button>
 			</div>
 		</div>
@@ -38,6 +39,15 @@
 	import skuCardChildren from './sku-card-children.vue'
 	export default {
 		components: {skuCardChildren},
+		mounted() {
+			// 监听拖拽的结束
+			// this.$dragging.$on('dragend', (e) => {
+			// 	this.sotrSkuValue({
+			// 		cardIndex: this.index,
+			// 		value: this.list
+			// 	})
+			// })
+		},
 		props: {
 			item: Object,
 			index: Number,
@@ -45,11 +55,11 @@
 		},
 		data(){
 			return {
-				
+				list: this.item.list
 			}
 		},
 		methods: {
-			...mapMutations(['delSkuCard','vModelSkuCard','sortSkuCard']),
+			...mapMutations(['sotrSkuValue','delSkuCard','vModelSkuCard','sortSkuCard','addSkuValue']),
 			vModel(key, index, value){
 				this.vModelSkuCard({key, index, value})
 			},

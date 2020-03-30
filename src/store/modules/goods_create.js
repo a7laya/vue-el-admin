@@ -32,14 +32,26 @@ export default {
 					}
 				]
 			}
+		],
+		// 规格组合表格表头
+		ths:[
+			{ name:'商品规格', rowspan: 1, colspan: 1, width: '' },
+			{ name:'SKU图片', rowspan: 2, width: '60' },
+			{ name:'销售价', rowspan: 2, width: '100' },
+			{ name:'市场价', rowspan: 2, width: '100' },
+			{ name:'成本价', rowspan: 2, width: '100' },
+			{ name:'库存', rowspan: 2, width: '100' },
+			{ name:'体积', rowspan: 2, width: '100' },
+			{ name:'重量', rowspan: 2, width: '100' },
+			{ name:'编码', rowspan: 2, width: '100' },
 		]
-		
-		
-		
-		
 	},
 	getters: {
-		
+		// 构造表头
+		tableThs(state){
+			state.ths[0].colspan = state.sku_card.length
+			return state.ths
+		}
 	},
 	mutations: {
 		// 修改state
@@ -58,7 +70,8 @@ export default {
 						image: '', // 图片
 					}
 				]
-			})
+			}),
+			console.log("state.sku_card:",state.sku_card)
 		},
 		// 删除规格卡片
 		delSkuCard(state,index){
@@ -71,6 +84,26 @@ export default {
 		// 规格卡片排序
 		sortSkuCard(state, {action,index}){
 			$Util[action](state.sku_card, index)
+		},
+		// 增加指定规格卡片的规格属性
+		addSkuValue(state, index){
+			state.sku_card[index].list.push({
+				name: '规格名称', // 文字
+				color: '', // 颜色
+				image: '', // 图片
+			})
+		},
+		// 删除指定规格卡片的规格属性
+		delSkuValue(state, {cardIndex, valueIndex}){
+			state.sku_card[cardIndex].list.splice(valueIndex, 1)
+		},
+		// 修改指定规格卡片的规格属性
+		updateSkuValue(state, {cardIndex, valueIndex, key, value}){
+			state.sku_card[cardIndex].list[valueIndex][key] = value
+		},
+		// 排序规格卡片的规格值列表
+		sotrSkuValue(state, {cardIndex, value}){
+			state.sku_card[cardIndex].list = value
 		}
 	},
 	actions: {

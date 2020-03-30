@@ -25,7 +25,12 @@
 					<!-- 多规格 -->
 					<el-form ref="form" label-width="80px" v-show="sku_type === 1">
 						<!-- 规格卡片 -->
-						<sku-card></sku-card>
+						<el-form ref="form" label-width="80px">
+							<el-form-item label="添加规格">
+								<sku-card v-for="(item,index) in sku_card" :key='index' :item='item' :index='index' :total='skuCardTotal'></sku-card>
+								<el-button type="success" size="mini" @click='addSkuCard'>添加规格</el-button>
+							</el-form-item>
+						</el-form>
 						
 						<el-form-item label="批量设置">
 							<el-button type="text">销售价</el-button>
@@ -72,12 +77,16 @@ export default {
 	computed:{
 		...mapState({
 			// 规格选择开关
-			sku_type: state=>state.goods_create.sku_type, // 0 单一规格  1 多规格
+			sku_type: state => state.goods_create.sku_type, // 0 单一规格  1 多规格
+			sku_card: state => state.goods_create.sku_card
 		}),
-		// 其他计算属性
+		// 规格卡片的总数
+		skuCardTotal() {
+			return this.sku_card.length
+		}
 	},
 	methods: {
-		...mapMutations(['vModelState']),
+		...mapMutations(['addSkuCard','vModelState']),
 		// 修改表单的值
 		vModel(key, value){
 			this.vModelState({key, value})

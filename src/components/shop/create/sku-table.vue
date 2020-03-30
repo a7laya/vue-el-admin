@@ -2,19 +2,18 @@
 	<table class="table table-sm table-bordered">
 		<thead>
 			<tr>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="1" colspan="2">商品规格</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">SKU图片</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">销售价</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">市场价</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">成本价</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">库存</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">体积</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">重量</th>
-				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="2">编码</th>
+				<th scope="col" class='text-center' style="vertical-align: middle;"
+				v-for="(item,index) in tableThs" :key='index'
+				:rowspan="item.rowspan" :colspan="item.colspan" :width="item.width">
+					{{item.name}}
+				</th>
 			</tr>
 			<tr>
-				<th scope="col" class='text-center'>颜色</th>
-				<th scope="col" class='text-center'>尺寸</th>
+				<th scope="col" class='text-center' style="vertical-align: middle;"
+				v-for="(item,index) in sku_card" :key='index'
+				rowspan="1" colspan="1" :width="item.width">
+					{{item.name}}
+				</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -29,12 +28,16 @@
 </template>
 
 <script>
-	import { mapGetters } from 'vuex'
+	import { mapGetters,mapState } from 'vuex'
 	export default {
 		computed:{
-			...mapGetters([
-				'tableThs',
-			])
+			...mapState({
+				sku_card: state => state.goods_create.sku_card
+			}),
+			...mapGetters(['tableThs',])
+		},
+		mounted() {
+			console.log('this.tableThs:',JSON.stringify(this.tableThs))
 		}
 	}
 </script>

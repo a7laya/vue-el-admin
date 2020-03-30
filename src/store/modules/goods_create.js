@@ -22,7 +22,7 @@ export default {
 		// 多规格卡片
 		sku_card: [
 			{
-				name: "", // 规格名称
+				name: "颜色", // 规格名称
 				type: 0,      // 规格类型 0无 1颜色 2图片
 				list:[        // 规格属性列表
 					{
@@ -31,7 +31,17 @@ export default {
 						image: '', // 图片
 					}
 				]
-			}
+			},{
+				name: "尺寸", // 规格名称
+				type: 0,      // 规格类型 0无 1颜色 2图片
+				list:[        // 规格属性列表
+					{
+						name: 'XXL', // 文字
+						color: '', // 颜色
+						image: '', // 图片
+					}
+				]
+			},
 		],
 		// 规格组合表格表头
 		ths:[
@@ -49,7 +59,9 @@ export default {
 	getters: {
 		// 构造表头
 		tableThs(state){
-			state.ths[0].colspan = state.sku_card.length
+			let length = state.sku_card.length
+			state.ths[0].colspan = length
+			state.ths[0].rowspan = length > 0 ? 1 : 0
 			return state.ths
 		}
 	},

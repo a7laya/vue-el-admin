@@ -25,6 +25,7 @@
 					<!-- 规格属性列表 -->
 					<div class="d-flex align-items-center flex-wrap">
 						<div class="border px-4 py-2 rounded">黄色</div>
+						
 					</div>
 					<!-- todo -->
 					

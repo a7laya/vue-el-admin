@@ -5,7 +5,10 @@
 		@click.stop="$emit('change',index)"
 		:class="{ 'active sum-active': active }">
 		{{ item.name }}
-		<el-dropdown class="ml-auto">
+		<span class="btn btn-light btn-sm ml-auto" v-if="!showOption">
+			{{ item.num }}
+		</span>
+		<el-dropdown class="ml-auto" v-else>
 			<span class="btn btn-light btn-sm">
 				{{ item.num }}
 				<i class="el-icon-arrow-down el-icon--right"></i>
@@ -23,10 +26,15 @@
 
 <script>
 	export default {
+		name: 'album-item',
 		props: {
 			active: Boolean,
 			item: Object,
-			index: Number
+			index: Number,
+			showOption: {
+				type: Boolean,
+				default: true
+			}
 		}
 	}
 </script>

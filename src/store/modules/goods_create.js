@@ -26,20 +26,28 @@ export default {
 				type: 0,      // 规格类型 0无 1颜色 2图片
 				list:[        // 规格属性列表
 					{
-						name: '蓝色', // 文字
+						name: '黄色', // 文字
 						color: '', // 颜色
 						image: '', // 图片
-					}
+					},{
+						name: '红色', // 文字
+						color: '', // 颜色
+						image: '', // 图片
+					},
 				]
 			},{
 				name: "尺寸", // 规格名称
 				type: 0,      // 规格类型 0无 1颜色 2图片
 				list:[        // 规格属性列表
 					{
+						name: 'SM', // 文字
+						color: '', // 颜色
+						image: '', // 图片
+					},{
 						name: 'XXL', // 文字
 						color: '', // 颜色
 						image: '', // 图片
-					}
+					},
 				]
 			},
 		],
@@ -57,9 +65,12 @@ export default {
 		]
 	},
 	getters: {
+		skuLabels(state){
+			return state.sku_card.filter(v=>v.list.length>0)
+		},
 		// 构造表头
-		tableThs(state){
-			let length = state.sku_card.length
+		tableThs(state,getters){
+			let length = getters.skuLabels.length
 			state.ths[0].colspan = length
 			state.ths[0].rowspan = length > 0 ? 1 : 0
 			return state.ths
@@ -75,8 +86,22 @@ export default {
 				}
 			}
 			if (sku_list.length === 0) return []
-			let arr = $Util.cartesianProductOf(sku_list)
-			return arr
+			let arr = $Util.cartesianProductOf(...sku_list)
+			return arr.map(v=>{
+				let obj = {
+					skus:  [],
+					image: '', // SKU图片
+					pprice: 0, // 销售价
+					oprice: 0, // 市场价
+					cprice: 0, // 成本价
+					stock:  0, // 库存
+					volume: 0, // 体积
+					weight: 0, // 重量
+					code:   '' // 编码
+				}
+				obj.skus = v
+				return obj
+			})
 		}
 	},
 	mutations: {
@@ -89,13 +114,7 @@ export default {
 			state.sku_card.push({
 				name: "", // 规格名称
 				type: 0,      // 规格类型 0无 1颜色 2图片
-				list:[        // 规格属性列表
-					{
-						name: '', // 文字
-						color: '', // 颜色
-						image: '', // 图片
-					}
-				]
+				list:[]       // 规格属性列表
 			}),
 			console.log("state.sku_card:",state.sku_card)
 		},

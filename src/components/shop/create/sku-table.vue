@@ -1,5 +1,5 @@
 <template>
-	<table class="table table-sm table-bordered">
+	<table class="table table-sm table-bordered table-hover">
 		<thead>
 			<tr>
 				<th scope="col" class='text-center' style="vertical-align: middle;" rowspan="1" colspan="2">商品规格</th>
@@ -19,7 +19,7 @@
 		</thead>
 		<tbody>
 			<tr>
-				<th  class='text-center' scope="row">1</th>
+				<td  class='text-center' scope="row">1</td>
 				<td  class='text-center'>Mark</td>
 				<td  class='text-center'>Otto</td>
 				<td  class='text-center'>@mdo</td>

@@ -63,6 +63,20 @@ export default {
 			state.ths[0].colspan = length
 			state.ths[0].rowspan = length > 0 ? 1 : 0
 			return state.ths
+		},
+		// 获取表格数据
+		tableData(state){
+			// 当前是否有规格卡片 没有的话直接返回一个空数组
+			if(state.sku_card.length === 0) return []
+			let sku_list = []
+			for (var i = 0; i < state.sku_card.length; i++) {
+				if(state.sku_card[i].list.length > 0) {
+					sku_list.push(state.sku_card[i].list)
+				}
+			}
+			if (sku_list.length === 0) return []
+			let arr = $Util.cartesianProductOf(sku_list)
+			return arr
 		}
 	},
 	mutations: {
@@ -116,7 +130,7 @@ export default {
 		// 排序规格卡片的规格值列表
 		sotrSkuValue(state, {cardIndex, value}){
 			state.sku_card[cardIndex].list = value
-		}
+		},
 	},
 	actions: {
 		

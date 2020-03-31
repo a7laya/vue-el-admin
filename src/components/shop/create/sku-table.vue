@@ -34,10 +34,11 @@
 			...mapState({
 				sku_card: state => state.goods_create.sku_card
 			}),
-			...mapGetters(['tableThs',])
+			...mapGetters(['tableThs','tableData'])
 		},
 		mounted() {
-			console.log('this.tableThs:',JSON.stringify(this.tableThs))
+			console.log('this.tableData:',JSON.stringify(this.tableData))
+			
 		}
 	}
 </script>

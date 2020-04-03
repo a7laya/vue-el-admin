@@ -3,7 +3,7 @@
 		<div class="card-header d-flex align-items-center">
 			规格项：
 			<el-input size="mini" :value="item.name"  @input="vModel('name', index, $event)" placeholder="输入规格名称" class="mr-2" style="width: 200px;">
-				<el-button slot='append' icon="el-icon-more"></el-button>
+				<el-button slot='append' icon="el-icon-more" @click="chooseSkus"></el-button>
 			</el-input>
 			
 			<el-radio-group style="margin-bottom: -10px;" :value='item.type'  @input="vModel('type', index, $event)">
@@ -38,6 +38,7 @@
 	// 引入规格属性列表组件
 	import skuCardChildren from './sku-card-children.vue'
 	export default {
+		inject: ['app'],
 		components: {skuCardChildren},
 		mounted() {
 			// 监听拖拽的结束
@@ -66,6 +67,12 @@
 			// 规格卡片排序
 			sortCard(action, index){
 				this.sortSkuCard({action, index})
+			},
+			// 选择规格
+			chooseSkus(){
+				this.app.chooseSkus(res=>{
+					console.log("res:",res)	
+				})
 			}
 		}
 	}

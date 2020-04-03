@@ -49,8 +49,13 @@
 				<el-tab-pane label="商品属性" class="bg-white"></el-tab-pane>
 				<!--=========== 媒体设置tab ===========-->
 				<el-tab-pane label="媒体设置" class="bg-white"></el-tab-pane>
+				
 				<!--=========== 商品详情tab ===========-->
 				<el-tab-pane label="商品详情" class="bg-white"></el-tab-pane>
+				<!-- 引入富文本编辑器 -->
+				<tinymce ref="editor" v-model='msg' @onClick="onClick" />
+				
+				
 				<!--=========== 折扣设置tab ===========-->
 				<el-tab-pane label="折扣设置" class="bg-white"></el-tab-pane>
 				<div style="height: 60px;"></div>
@@ -64,15 +69,18 @@ import baseCreate from '@/components/shop/create/base-create.vue';
 import singleAttrs from '@/components/shop/create/single-attrs.vue';
 import skuCard from '@/components/shop/create/sku/sku-card.vue';
 import skuTable from '@/components/shop/create/sku-table.vue';
+// 富文本编辑器
+import tinymce from '@/components/common/tinymce.vue'
 
 import { mapState, mapMutations } from 'vuex';
 export default {
-	components: { baseCreate, singleAttrs, skuCard, skuTable },
+	components: { baseCreate, singleAttrs, skuCard, skuTable, tinymce },
 	data() {
 		return {
 			tabIndex: 0,
 			multipleSelection: [], // 选中的数据
-			tableData: []
+			tableData: [],
+			msg: 'tinymce',
 		};
 	},
 	computed: {
@@ -96,6 +104,12 @@ export default {
 		handleClick(tab, event) {
 			// console.log(tab, event);
 			console.log('tabIndex:', this.tabIndex);
+		},
+		// 富文本编辑器的方法
+		onClick(e, editor){
+			console.log('Element clicked');
+			console.log("e:",e)
+			console.log("editor:",editor)
 		}
 	}
 };

@@ -21,8 +21,8 @@
 		<div class="card-body">
 			<!-- 规格属性列表 -->
 			<div class="d-flex align-items-center flex-wrap">
-				<sku-card-children v-for="(item2,index2) in list" :key='index2' :type="item.type" :item='item2' :index1='index' :index2='index2'
-				v-dragging='{item: item2, list: list, group: "index" + index}'></sku-card-children>
+				<sku-card-children v-for="(item2,index2) in item.list" :key='index2' :type="item.type" :item='item2' :index1='index' :index2='index2'
+				v-dragging='{item: item2, list: item.list, group: "index" + index}'></sku-card-children>
 			</div>
 			<!-- 增加规格属性 -->
 			<div class="mt-2">
@@ -56,8 +56,13 @@
 		},
 		data(){
 			return {
-				list: this.item.list
+				// list: this.item.list
 			}
+		},
+		computed:{
+			// ...mapState({
+			// 	sku_card: state => state.goods_create.sku_card
+			// })
 		},
 		methods: {
 			...mapMutations(['sotrSkuValue','delSkuCard','vModelSkuCard','sortSkuCard','addSkuValue']),
@@ -71,7 +76,9 @@
 			// 选择规格
 			chooseSkus(){
 				this.app.chooseSkus(res=>{
-					console.log("res:",res)	
+					this.vModel('name', this.index, res.name)
+					this.vModel('type', this.index, res.type)
+					this.vModel('list', this.index, res.list)
 				})
 			}
 		}

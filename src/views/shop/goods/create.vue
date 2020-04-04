@@ -30,12 +30,16 @@
 						</el-form>
 
 						<el-form-item label="批量设置">
-							<el-button type="text">销售价</el-button>
-							<el-button type="text">市场价</el-button>
-							<el-button type="text">成本价</el-button>
-							<el-button type="text">库存</el-button>
-							<el-button type="text">体积</el-button>
-							<el-button type="text">重量</el-button>
+							<template v-if="!updateAllStatus">
+								<el-button type="text"
+								v-for="(btn,btnIndex) in updateList" :key="btnIndex"
+								@click="openUpdateAllStatus(btn)">{{btn.name}}</el-button>
+							</template>
+							<div class="d-flex align-items-center" v-else>
+								<el-input size="mini" type="number"  placeholder="请输入" style="width: 150px;"></el-input>
+								<el-button size="mini" type="primary" class="ml-2">设置</el-button>
+								<el-button size="mini">取消</el-button>
+							</div>
 						</el-form-item>
 
 						<!-- 规格排列组合表格 -->
@@ -51,9 +55,11 @@
 				<el-tab-pane label="媒体设置" class="bg-white"></el-tab-pane>
 				
 				<!--=========== 商品详情tab ===========-->
-				<el-tab-pane label="商品详情" class="bg-white"></el-tab-pane>
-				<!-- 引入富文本编辑器 -->
-				<tinymce ref="editor" v-model='msg' @onClick="onClick" />
+				<el-tab-pane label="商品详情" class="bg-white">
+					<!-- 引入富文本编辑器 -->
+					<tinymce ref="editor" v-model='msg' @onClick="onClick" />
+				</el-tab-pane>
+				
 				
 				
 				<!--=========== 折扣设置tab ===========-->
@@ -78,9 +84,18 @@ export default {
 	data() {
 		return {
 			tabIndex: 0,
-			multipleSelection: [], // 选中的数据
-			tableData: [],
 			msg: 'tinymce',
+			// 批量修改
+			updateAllStatus: false,
+			// 批量修改列表
+			updateList:[
+				{name:"销售价"},
+				{name:"市场价"},
+				{name:"成本价"},
+				{name:"库存"},
+				{name:"体积"},
+				{name:"重量"},
+			]
 		};
 	},
 	computed: {
@@ -110,6 +125,10 @@ export default {
 			console.log('Element clicked');
 			console.log("e:",e)
 			console.log("editor:",editor)
+		},
+		// 点击批量修改按钮
+		openUpdateAllStatus(item){
+			console.log("123:",123)
 		}
 	}
 };

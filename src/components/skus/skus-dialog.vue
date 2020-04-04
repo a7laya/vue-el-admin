@@ -108,13 +108,19 @@ export default {
 		confirm() {
 			// 选中SKU传回去
 			if (typeof this.callback === 'function') {
-				this.callback(this.chooseList);
+				let item = this.skusList[this.skuIndex]
+				this.callback({
+					name: item.name,
+					type: item.type,
+					list: this.chooseList
+				});
 			}
 			// 隐藏弹出层
 			this.hide();
 		},
 		// 关闭弹出层
 		hide() {
+			this.unChooseAll()
 			// 关闭弹出
 			this.createModel = false;
 			// 初始化回调

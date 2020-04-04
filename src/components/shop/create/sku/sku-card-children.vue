@@ -3,7 +3,8 @@
 	<div class="border px-2 py-1 rounded mr-2 mb-2 position-relative d-flex align-items-center">
 		<div v-if="type != 0">
 			<!-- 颜色选择器 -->
-			<el-color-picker v-if="type === 1" size="mini"></el-color-picker>
+			<el-color-picker v-if="type === 1" size="mini"
+			v-model="item.color" @change='chooseColor'></el-color-picker>
 			<!-- 图片选择器 -->
 			<template v-else>
 				<span  v-if='!item.image' class="btn btn-light p-1" style="line-height: 1;"
@@ -41,9 +42,7 @@
 		methods:{
 			...mapMutations(['delSkuValue','updateSkuValue']),
 			delValue(){
-				let index1 = this.index1
-				let index2 = this.index2
-				this.delSkuValue({index1,index2})
+				this.delSkuValue({cardIndex:this.index1,valueIndex:this.index2})
 			},
 			vModel(key, value){
 				this.updateSkuValue({
@@ -61,6 +60,11 @@
 				this.app.chooseImage(res=>{
 					this.vModel('image', res[0].url)
 				}, 1)
+			},
+			// 选择颜色
+			chooseColor(e){
+				console.log("e:",e)
+				// this.vModel('color', item.color)
 			}
 		}
 	}

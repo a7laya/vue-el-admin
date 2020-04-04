@@ -10,7 +10,13 @@ export default {
 		min_stock: 0, // 库存预警
 		display_stock: 0, // 显示库存
 		status: 0, // 是否上架
-		express: '',
+		express: '', // 运费
+		
+		banners: [
+			{id:1, url:"http://127.0.0.1:8080/img/avatar.08803b0d.png"},
+		], // 商品大图 
+		
+		
 		
 		// 单一规格
 		oprice: 0, // 市场价 - 原价

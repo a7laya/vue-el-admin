@@ -36,15 +36,16 @@
 								@click="openUpdateAllStatus(btn)">{{btn.name}}</el-button>
 							</template>
 							<div class="d-flex align-items-center" v-else>
-								<el-input size="mini" type="number"  placeholder="请输入" style="width: 150px;"></el-input>
-								<el-button size="mini" type="primary" class="ml-2">设置</el-button>
-								<el-button size="mini">取消</el-button>
+								<el-input size="small" type="number"  :placeholder="updateAllPlaceholder" style="width: 150px;"
+								v-model="updateAllValue"></el-input>
+								<el-button size="mini" type="primary" class="ml-2" @click="updateAllSubmit">设置</el-button>
+								<el-button size="mini" @click="closeUpdateAllStatus">取消</el-button>
 							</div>
 						</el-form-item>
 
 						<!-- 规格排列组合表格 -->
 						<el-form-item label="规格设置">
-							<sku-table></sku-table>
+							<sku-table ref="table"></sku-table>
 						</el-form-item>
 						
 					</el-form>
@@ -52,7 +53,33 @@
 				<!--=========== 商品属性tab ===========-->
 				<el-tab-pane label="商品属性" class="bg-white"></el-tab-pane>
 				<!--=========== 媒体设置tab ===========-->
-				<el-tab-pane label="媒体设置" class="bg-white"></el-tab-pane>
+				<el-tab-pane label="媒体设置" class="bg-white">
+					<el-form label-width="80px">
+						<el-form-item label="商品大图">
+							<div class="d-flex flex-wrap">
+								<div style="height: 150px; width: 150px; border-style: dashed; cursor: pointer;position: relative;" 
+								class="border rounded d-flex align-items-center justify-content-center text-muted mr-3 mb-3"
+								@click="chooseImage(index)"
+								v-for="(item,index) in banners" :key='index'>
+									<img v-if="item.url" :src="item.url" style="width: 100%; height: 100%;"/>
+									<i v-else class="el-icon-plus" style="font-size: 30px;"></i>
+									<i class="el-icon-delete p-2 text-white position-absolute"
+									style="top: 0; right: 0;background-color: rgba(0,0,0,.4);"
+									@click.stop="deleteImage(index)"></i>
+								</div>
+								<!-- 未达到限制数可以继续添加 -->
+								<div v-if="banners.length < 9" class="d-flex flex-wrap">
+									<div style="height: 150px; width: 150px; border-style: dashed; cursor: pointer;" 
+									class="border rounded d-flex align-items-center justify-content-center text-muted mr-3 mb-3"
+									@click="chooseImage(-1)">
+										<i class="el-icon-plus" style="font-size: 30px;"></i>
+									</div>
+								</div>
+							</div>
+							
+						</el-form-item>
+					</el-form>
+				</el-tab-pane>
 				
 				<!--=========== 商品详情tab ===========-->
 				<el-tab-pane label="商品详情" class="bg-white">
@@ -80,29 +107,33 @@ import tinymce from '@/components/common/tinymce.vue'
 
 import { mapState, mapMutations } from 'vuex';
 export default {
+	inject: ['app'],
 	components: { baseCreate, singleAttrs, skuCard, skuTable, tinymce },
 	data() {
 		return {
 			tabIndex: 0,
 			msg: 'tinymce',
-			// 批量修改
+			// 批量修改的状态
 			updateAllStatus: false,
 			// 批量修改列表
 			updateList:[
-				{name:"销售价"},
-				{name:"市场价"},
-				{name:"成本价"},
-				{name:"库存"},
-				{name:"体积"},
-				{name:"重量"},
-			]
+				{name:"销售价", key:"pprice"},
+				{name:"市场价", key:"oprice"},
+				{name:"成本价", key:"cprice"},
+				{name:"库存", key:"stock"},
+				{name:"体积", key:"volume"},
+				{name:"重量", key:"weight"},
+			],
+			updateAllPlaceholder: false, // 批量设置输入框提示文字
+			updateAllValue: "", // 批量设置输入框绑定的值
 		};
 	},
 	computed: {
 		...mapState({
 			// 规格选择开关
 			sku_type: state => state.goods_create.sku_type, // 0 单一规格  1 多规格
-			sku_card: state => state.goods_create.sku_card
+			sku_card: state => state.goods_create.sku_card,
+			banners: state => state.goods_create.banners
 		}),
 		// 规格卡片的总数
 		skuCardTotal() {
@@ -128,8 +159,52 @@ export default {
 		},
 		// 点击批量修改按钮
 		openUpdateAllStatus(item){
-			console.log("123:",123)
+			this.updateAllStatus = item.key
+			this.updateAllPlaceholder = item.name
+		},
+		// 取消批量修改
+		closeUpdateAllStatus(){
+			this.updateAllStatus = false
+			this.updateAllValue = ""
+		},
+		// 提交批量修改	
+		updateAllSubmit(){
+			this.$refs.table.list.forEach(v=>v[this.updateAllStatus]=this.updateAllValue)
+			this.closeUpdateAllStatus()
+		},
+		// 选择图片
+		chooseImage(index){
+			let num = 9 - this.banners.length
+			this.app.chooseImage(res=>{
+				if(res.length === 0) return
+				let list = []
+				if(index === -1) {
+					list = [...this.banners, ...res]
+				} else {
+					list = [...this.banners]
+					list[index] = res[0]
+				}
+				this.vModel('banners', list)
+			}, index === -1 ? num : 1)
+			console.log('this.banners:',this.banners)
+		},
+		// 删除图片
+		deleteImage(index){
+			this.$confirm('是否删除该图片?', '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					let list = [...this.banners]
+					list.splice(index,1)
+					this.vModel('banners', list)
+					this.$message({
+						type: 'success',
+						message: '删除成功!'
+					});
+				})
 		}
+		
 	}
 };
 </script>

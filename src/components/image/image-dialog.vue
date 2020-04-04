@@ -41,7 +41,7 @@
 									{{item.checkOrder}}
 								</span>
 								<img :src="item.url" class="w-100" style="height: 100px;"/>
-								<div class="w-100 text-white position-absolute px-2" style="background-color: rgba(0,0,0,.5);margin-top:-24px">
+								<div class="w-100 text-white position-absolute px-2" style="background-color: rgba(0,0,0,.5);margin-top:-20px">
 									<small>{{ item.name }}</small>
 								</div>
 								<div class="text-center p-2">
@@ -153,7 +153,7 @@
 				for (let i = 0; i < 10; i++) {
 					this.imageList.push({
 						id: i+3,
-						url: 'http://127.0.0.1:8080/img/demo1.4419d7d7.jpeg',
+						url: 'http://127.0.0.1:8080/img/avatar.08803b0d.png',
 						name: '图片' + i,
 						isCheck: false,
 						checkOrder: 0

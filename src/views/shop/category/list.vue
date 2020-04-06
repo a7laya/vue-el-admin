@@ -121,6 +121,13 @@
 					inputValidator: inputValidator
 				}).then(({value}) => {
 					console.log('value:',value)
+					this.data.unshift({
+						id: 1,
+						label: value,
+						status: 1,
+						editStatus: false,
+						children: []
+					})
 				})
 			}
 		}

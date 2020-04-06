@@ -9,23 +9,21 @@ export default {
 				subMenu: [
 					{ icon: "el-icon-s-home", name: "后台首页", pathname: "index"},
 					{ icon: "el-icon-picture", name: "相册管理", pathname: "image"},
-					{ icon: "el-icon-s-unfold", name: "商品列表",  pathname: "shop_goods_list"}
 				]
 			},
 			{ 
 				name: '商品',
 				subActive: '0',
 				subMenu: [
-					{ icon: "el-icon-document-add", name: "创建商品",  pathname: "shop_goods_create"},
-					{ icon: "el-icon-s-unfold", name: "商品列表2",  pathname: "shop_goods_list2"},
+					{ icon: "el-icon-s-unfold", name: "商品列表",  pathname: "shop_goods_list"},
+					{ icon: "el-icon-s-help", name: "分类管理",  pathname: "shop_category_list"},
+					{ icon: "el-icon-s-help", name: "商品规格管理",  pathname: "shop_sku_list"},
 				]
 			},
 			{ 
 				name: '订单',
 				subActive: '0',
-				subMenu: [
-					{ icon: "el-icon-s-unfold", name: "商品列表3",  pathname: "shop_goods_list"},
-				]
+				subMenu: []
 			},
 			{ 
 				name: '会员',

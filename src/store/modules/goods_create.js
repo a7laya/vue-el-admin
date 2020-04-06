@@ -57,6 +57,16 @@ export default {
 				]
 			},
 		],
+		
+		// 商品类型
+		goods_type_id: "", 
+		// 商品属性
+		goods_attrs: {
+			phone_model: ""
+		},
+		// 折扣
+		discount: 0,
+		
 		// 规格组合表格表头
 		ths:[
 			{ name:'商品规格', rowspan: 1, colspan: 1, width: '' },
@@ -155,6 +165,10 @@ export default {
 		// 排序规格卡片的规格值列表
 		sotrSkuValue(state, {cardIndex, value}){
 			state.sku_card[cardIndex].list = value
+		},
+		// 修改商品属性
+		vModelGoodsAttrs(state, { key, value }){
+			state.goods_attrs[key] = value
 		},
 	},
 	actions: {

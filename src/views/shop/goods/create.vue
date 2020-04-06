@@ -5,7 +5,6 @@
 			<el-tabs v-model="tabIndex" @tab-click="handleClick">
 				<!--=========== 基础设置tab ===========-->
 				<el-tab-pane label="基础设置" class="bg-white"><base-create></base-create></el-tab-pane>
-
 				<!--=========== 商品规格tab ===========-->
 				<el-tab-pane label="商品规格" class="bg-white">
 					<!-- 规格选项 -->
@@ -51,7 +50,28 @@
 					</el-form>
 				</el-tab-pane>
 				<!--=========== 商品属性tab ===========-->
-				<el-tab-pane label="商品属性" class="bg-white"></el-tab-pane>
+				<el-tab-pane label="商品属性" class="bg-white">
+					<el-form label-width="80px">
+						<el-form-item label="商品类型">
+							<el-select :value="goods_type_id" @change="vModel('goods_type_id',$event)" placeholder="请选择商品类型">
+								<el-option label="区域一" value="shanghai"></el-option>
+								<el-option label="区域二" value="beijing"></el-option>
+							</el-select>
+						</el-form-item>
+					</el-form>
+					<el-card class="box-card">
+						<div slot="header" class="clearfix">
+							<span>商品属性</span>
+							<el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>
+						</div>
+						<el-form label-width="80px">
+							<el-form-item label="手机型号">
+								<el-input :value="goods_attrs.phone_model" placeholder="请输入手机型号"
+								@input="vModelGoodsAttrs( {key:'phone_model', value:$event})"></el-input>
+							</el-form-item>
+						</el-form>
+					</el-card>
+				</el-tab-pane>
 				<!--=========== 媒体设置tab ===========-->
 				<el-tab-pane label="媒体设置" class="bg-white">
 					<el-form label-width="80px">
@@ -80,17 +100,22 @@
 						</el-form-item>
 					</el-form>
 				</el-tab-pane>
-				
 				<!--=========== 商品详情tab ===========-->
 				<el-tab-pane label="商品详情" class="bg-white">
 					<!-- 引入富文本编辑器 -->
 					<tinymce ref="editor" v-model='msg' @onClick="onClick" />
 				</el-tab-pane>
-				
-				
-				
 				<!--=========== 折扣设置tab ===========-->
-				<el-tab-pane label="折扣设置" class="bg-white"></el-tab-pane>
+				<el-tab-pane label="折扣设置" class="bg-white">
+					<el-form  label-width="80px">
+						<el-form-item label="会员折扣">
+							<el-input :value="discount" @input="vModel('discount', $event)"
+							:min="0" :max="100" type="number">
+								<template slot="append">%</template>
+							</el-input>
+						</el-form-item>
+					</el-form>
+				</el-tab-pane>
 				<div style="height: 60px;"></div>
 			</el-tabs>
 		</div>
@@ -133,7 +158,10 @@ export default {
 			// 规格选择开关
 			sku_type: state => state.goods_create.sku_type, // 0 单一规格  1 多规格
 			sku_card: state => state.goods_create.sku_card,
-			banners: state => state.goods_create.banners
+			banners:  state => state.goods_create.banners,
+			goods_type_id: state => state.goods_create.goods_type_id,
+			goods_attrs:   state => state.goods_create.goods_attrs,
+			discount:      state => state.goods_create.discount,
 		}),
 		// 规格卡片的总数
 		skuCardTotal() {
@@ -141,7 +169,7 @@ export default {
 		}
 	},
 	methods: {
-		...mapMutations(['addSkuCard', 'vModelState']),
+		...mapMutations(['addSkuCard', 'vModelState', 'vModelGoodsAttrs']),
 		// 修改表单的值
 		vModel(key, value) {
 			this.vModelState({ key, value });
@@ -203,6 +231,10 @@ export default {
 						message: '删除成功!'
 					});
 				})
+		},
+		// 商品类型改变
+		ceshi(e){
+			console.log('e:',e)
 		}
 		
 	}

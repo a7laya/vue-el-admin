@@ -32,8 +32,12 @@ let routes = [
 					component: "image/index"
 				},
 				{	
-					meta: { title:"商品列表2" },
-					component: "shop/goods/list2"
+					meta: { title:"分类管理" },
+					component: "shop/category/list"
+				},
+				{	
+					meta: { title:"规格管理" },
+					component: "shop/sku/list"
 				}
 			]
 		},

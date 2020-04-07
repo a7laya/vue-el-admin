@@ -36,8 +36,12 @@ let routes = [
 					component: "shop/category/list"
 				},
 				{	
-					meta: { title:"规格管理" },
+					meta: { title:"商品规格" },
 					component: "shop/sku/list"
+				},
+				{	
+					meta: { title:"商品类型" },
+					component: "shop/type/list"
 				}
 			]
 		},

@@ -2,8 +2,8 @@
 	<div class="bg-white h-100 px-3 py-2" style="margin:-8px -20px 20px -20px; ">
 
 		<div>
-			<el-button size="medium" type="success" @click="openModel">添加规格</el-button>
-			<el-button size="medium" type="danger">批量删除</el-button>
+			<el-button size="medium" type="success" @click="openModel(false)">添加规格</el-button>
+			<el-button size="medium" type="danger" @click="deleteAllConfirm">批量删除</el-button>
 		</div>
 		<!-- 表格 -->
 		<el-table border class="mt-3" @selection-change="handleSelectionChange" :data="tableData" style="width: 100%">
@@ -21,7 +21,7 @@
 			<el-table-column label="操作" align="center" width="140">
 				<template slot-scope="scope">
 					<el-button-group>
-						<el-button plain type="success" size="mini">编辑</el-button>
+						<el-button plain type="success" size="mini" @click="openModel(scope)">修改</el-button>
 						<el-button plain type="warning" size="mini" @click="deleteItem(scope)">删除</el-button>
 					</el-button-group>
 				</template>
@@ -80,6 +80,7 @@
 		},
 		data() {
 			return {
+				editIndex: -1,
 				form: {
 					name: '',
 					order: 50,
@@ -98,10 +99,39 @@
 				},
 				tableData: [
 					{
-						name: '颜色', 
+						name: '颜色1', 
 						value: '棕色,蓝色',
 						order: 50,
 						status: 1, // 1 启用  0 禁用
+						id: 1
+					},
+					{
+						name: '颜色2', 
+						value: '棕色,蓝色',
+						order: 50,
+						status: 1, // 1 启用  0 禁用
+						id: 2
+					},
+					{
+						name: '颜色3', 
+						value: '棕色,蓝色',
+						order: 50,
+						status: 1, // 1 启用  0 禁用
+						id: 3
+					},
+					{
+						name: '颜色4', 
+						value: '棕色,蓝色',
+						order: 50,
+						status: 1, // 1 启用  0 禁用
+						id: 4
+					},
+					{
+						name: '颜色5', 
+						value: '棕色,蓝色',
+						order: 50,
+						status: 1, // 1 启用  0 禁用
+						id: 5
 					},
 				],
 				multipleSelection: [], // 选中的数据
@@ -109,19 +139,30 @@
 				createModel: false,
 			};
 		},
-		computed: {},
-		created() {
-		},
 		methods: {
 			// 打开模态框
-			openModel(){
-				// 初始化表单
-				this.form = {
-					name: '',
-					order: 50,
-					status: 1,
-					type: 0,
-					value: "",
+			openModel(e = false){
+				// 增加
+				if(!e){
+					// 初始化表单
+					this.form = {
+						name: '',
+						order: 50,
+						status: 1,
+						type: 0,
+						value: "",
+					}
+					this.editIndex = -1
+				} else {
+					// 修改
+					this.form = {
+						name: e.row.name,
+						order: e.row.order,
+						status: e.row.status,
+						type: e.row.type,
+						value: e.row.value.replace(/,/g,'\n'),
+					}
+					this.editIndex = e.$index
 				}
 				// 打开dialog
 				this.createModel = true
@@ -138,12 +179,19 @@
 			submit(){
 				// 验证成功后才提交
 				this.$refs.form.validate(res => {
+					let msg = "添加"
 					if(!res) return
-					this.form.value = this.form.value.replace('\n',',')
-					this.tableData.unshift({...this.form})
+					this.form.value = this.form.value.replace(/\n/g,',')
+					if(this.editIndex === -1){
+						this.tableData.unshift(this.form)
+					} else {
+						this.tableData.splice(this.editIndex, 1, this.form)
+						msg = "修改"
+					}
+					// 关闭模态框 并提示成功
 					this.createModel = false
 					this.$message({
-						message: '添加成功',
+						message: msg + '成功',
 						type: 'success'
 					});
 				})
@@ -166,6 +214,30 @@
 			handleSelectionChange(val) {
 				this.multipleSelection = val;
 				console.log('this.multipleSelection:', this.multipleSelection);
+			},
+			// 批量删除
+			deleteAll(){
+				this.multipleSelection.forEach(item=>{
+					let index = this.tableData.findIndex(v=>v.id === item.id)
+					if(index !== -1){
+						this.tableData.splice(index,1)
+					}
+				})
+				this.multipleSelection = []
+			},
+			// 批量删除确认
+			deleteAllConfirm(){
+				this.$confirm('是否删除选中规格?', '提示', {
+					confirmButtonText: '删除',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+						this.deleteAll()
+						this.$message({
+							type: 'success',
+							message: '删除成功!'
+						});
+					})
 			},
 			// 分页动作
 			handleSizeChange(val) {

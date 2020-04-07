@@ -45,8 +45,8 @@
 				></el-pagination>
 			</div>
 		</el-footer>
-		<!-- 新增 | 修改规格模态框 -->
-		<el-dialog title="添加规格" :visible.sync="createModel" top="5vh" width="80%">
+		<!-- 新增 | 修改类型模态框 -->
+		<el-dialog title="添加类型" :visible.sync="createModel" top="5vh" width="80%">
 			<!-- 表单内容 -->
 			<el-form ref="form" :rules="rules" :model="form" label-width="80px">
 				<el-form-item label="类型名称" prop="name"><el-input v-model="form.name" placeholder="类型名称" size="mini" class="w-50"></el-input></el-form-item>
@@ -93,23 +93,29 @@
 							</template>
 						</el-table-column>
 						<el-table-column label="属性值">
-							<template slot-scope="scope"  v-if="scope.row.type !=='input'">
-								<el-input v-if="scope.row.isEdit" type="textarea" :rows="2" v-model="scope.row.value" 
-								placeholder="一行一个属性值,多个属性值换行输入" size="mini"></el-input>
-								<font v-else>{{scope.row.value}}</font>
+							<template slot-scope="scope" v-if="scope.row.type !== 'input'">
+								<el-input
+									v-if="scope.row.isEdit"
+									type="textarea"
+									:rows="2"
+									v-model="scope.row.value"
+									placeholder="一行一个属性值,多个属性值换行输入"
+									size="mini"
+								></el-input>
+								<font v-else>{{ scope.row.value }}</font>
 							</template>
 						</el-table-column>
 						<el-table-column label="操作" width="180">
 							<template slot-scope="scope">
-								<el-button v-if="scope.row.type !=='input'" type="text" size="mini" @click="editRow(scope)">{{scope.row.isEdit ? '完成' : '编辑属性值'}}</el-button>
+								<el-button v-if="scope.row.type !== 'input'" type="text" size="mini" @click="editRow(scope)">
+									{{ scope.row.isEdit ? '完成' : '编辑属性值' }}
+								</el-button>
 								<el-button type="text" size="mini" @click="delRow(scope)">删除</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
 				</el-form-item>
-				<el-form-item label="">
-					<el-button type="text" size="mini" icon="el-icon-plus" @click="addValue">添加属性</el-button>
-				</el-form-item>
+				<el-form-item label=""><el-button type="text" size="mini" icon="el-icon-plus" @click="addValue">添加属性</el-button></el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click="createModel = false">取 消</el-button>
@@ -133,13 +139,11 @@ export default {
 				order: 50,
 				status: 1,
 				sku_list: [],
-				value_list: [{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }]
 			},
 			value_list: [{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }],
 			// 表单验证
 			rules: {
-				name: [{ required: true, message: '规格名称不能为空', trigger: 'blur' }],
-				value: [{ required: true, message: '规格项目不能为空', trigger: 'blur' }]
+				name: [{ required: true, message: '类型名称不能为空', trigger: 'blur' }]
 			},
 			tableData: [
 				{
@@ -148,11 +152,14 @@ export default {
 					order: 50,
 					status: 1, // 1 启用  0 禁用
 					sku_list: [
-						// 关联的规格
+						// 关联的类型
 						{ id: 1, name: '颜色' },
 						{ id: 2, name: '尺寸' }
 					],
-					value_list: [{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }, { order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }]
+					value_list: [
+						{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false },
+						{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }
+					]
 				}
 			],
 			multipleSelection: [], // 选中的数据
@@ -176,25 +183,20 @@ export default {
 					name: '',
 					order: 50,
 					status: 1,
-					type: 0,
-					value: ''
+					sku_list: [],
 				};
+				this.value_list = []
 				this.editIndex = -1;
 			} else {
 				// 修改
-				this.form = {
-					name: e.row.name,
-					order: e.row.order,
-					status: e.row.status,
-					type: e.row.type,
-					value: e.row.value.replace(/,/g, '\n')
-				};
+				this.form = {...e.row};
+				this.value_list = [...e.row.value_list]
 				this.editIndex = e.$index;
 			}
 			// 打开dialog
 			this.createModel = true;
 		},
-		// 改变规格状态
+		// 改变类型状态
 		changeStatus(item) {
 			item.status = item.status === 1 ? 0 : 1;
 			this.$message({
@@ -202,17 +204,45 @@ export default {
 				message: item.status === 1 ? `已启用: ${item.name}` : `已禁用: ${item.name}`
 			});
 		},
-		// 提交规格
+		// 提交类型
 		submit() {
 			// 验证成功后才提交
 			this.$refs.form.validate(res => {
-				let msg = '添加';
 				if (!res) return;
-				this.form.value = this.form.value.replace(/\n/g, ',');
+				// 验证属性列表
+				let result = true
+				let message = [] // 存储错误消息
+				this.value_list.forEach((item, index) => {
+					if(item.order === '') {
+						result = result && false
+						message.push(`属性列表第${index+1}行,排序不能为空`)
+					} 
+					if(item.name === '') {
+						result = result && false
+						message.push(`属性列表第${index+1}行,属性名称不能为空`)
+					} 
+					if(item.type !== 'input' && item.value === '') {
+						result = result && false
+						message.push(`属性列表第${index+1}行,属性值不能为空`)
+					}
+				});
+				if(!result) return this.$notify({
+					title: '属性列表提示',
+					type: 'warning',
+					dangerouslyUseHTMLString: true,
+					message: message.join('<br>')
+				});
+				let msg = '添加';
 				if (this.editIndex === -1) {
-					this.tableData.unshift(this.form);
+					this.tableData.unshift({
+						...this.form,
+						value_list: [...this.value_list]
+					});
 				} else {
-					this.tableData.splice(this.editIndex, 1, this.form);
+					this.tableData.splice(this.editIndex, 1, {
+						...this.form,
+						value_list: [...this.value_list]
+					});
 					msg = '修改';
 				}
 				// 关闭模态框 并提示成功
@@ -223,7 +253,7 @@ export default {
 				});
 			});
 		},
-		// 删除单个规格
+		// 删除单个类型
 		deleteItem(scope) {
 			this.$confirm('确定删除: ' + scope.row.name, '提示', {
 				confirmButtonText: '确定',
@@ -254,7 +284,7 @@ export default {
 		},
 		// 批量删除确认
 		deleteAllConfirm() {
-			this.$confirm('是否删除选中规格?', '提示', {
+			this.$confirm('是否删除选中类型?', '提示', {
 				confirmButtonText: '删除',
 				cancelButtonText: '取消',
 				type: 'warning'
@@ -274,28 +304,27 @@ export default {
 			console.log(`当前页: ${val}`);
 		},
 		// 添加属性
-		addValue(){
-			this.value_list.push({ order: 50, name: '', type: 'input', status: 1, value: '', isEdit: false })
+		addValue() {
+			this.value_list.push({ order: 50, name: '', type: 'input', status: 1, value: '', isEdit: false });
 		},
 		// 编辑属性值
 		editRow(scope) {
-			scope.row.isEdit = !scope.row.isEdit
+			scope.row.isEdit = !scope.row.isEdit;
 		},
 		// 删除属性
-		delRow(scope){
+		delRow(scope) {
 			this.$confirm('是否删除属性: ' + scope.row.name, '提示', {
 				confirmButtonText: '删除',
 				cancelButtonText: '取消',
 				type: 'warning'
 			}).then(() => {
-					this.value_list.splice(scope.$index,1)
-					this.$message({
-						type: 'success',
-						message: '删除成功!'
-					});
-				})
+				this.value_list.splice(scope.$index, 1);
+				this.$message({
+					type: 'success',
+					message: '删除成功!'
+				});
+			});
 		}
-		
 	}
 };
 </script>

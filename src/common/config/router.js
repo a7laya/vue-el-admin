@@ -42,6 +42,10 @@ let routes = [
 				{	
 					meta: { title:"商品类型" },
 					component: "shop/type/list"
+				},
+				{	
+					meta: { title:"商品评论" },
+					component: "shop/comment/list"
 				}
 			]
 		},

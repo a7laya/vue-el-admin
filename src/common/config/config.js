@@ -19,6 +19,7 @@ export default {
 					{ icon: "el-icon-s-help", name: "分类管理",  pathname: "shop_category_list"},
 					{ icon: "el-icon-s-help", name: "商品规格",  pathname: "shop_sku_list"},
 					{ icon: "el-icon-s-help", name: "商品类型",  pathname: "shop_type_list"},
+					{ icon: "el-icon-s-help", name: "商品评论",  pathname: "shop_comment_list"},
 				]
 			},
 			{ 

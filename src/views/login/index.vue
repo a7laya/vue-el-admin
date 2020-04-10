@@ -16,7 +16,8 @@
 									<el-input v-model="form.password" type="password" size="medium" placeholder="请输入密码"></el-input>
 								</el-form-item>
 								<el-form-item>
-									<el-button type="primary" size="medium" class="w-100" @click="submit">立即登录</el-button>
+									<el-button type="primary" size="medium" class="w-100" :loading="loading" @click="submit">
+									{{loading ? '登陆中...' : '立即登录'}}</el-button>
 								</el-form-item>
 							</el-form>
 						</div>
@@ -31,6 +32,7 @@
 	export default {
 		data(){
 			return {
+				loading: false, // 提交表单后显示loading
 				form:{
 					username: "",
 					password: ""
@@ -51,7 +53,21 @@
 					console.log(e);
 					if(!e) return
 					// 提交表单
-					this.$router.push({name:'index'})
+					this.loading = true
+					this.axios.post('/admin/login',this.form).then(res=>{
+						console.log("res:",res)
+						//  == 保存登录状态 == 存入vuex - 本地
+						this.$store.commit('login',res.data.data)
+						//  == 生成后台菜单 == 
+						this.$store.commit('createNavBar',res.data.data.tree)
+						// 成功提示
+						this.$message('登录成功')
+						this.loading = false
+						// 跳转到后台首页
+						this.$router.push({name:'index'})
+					}).catch(err => {
+					this.loading = false
+					})
 				})
 			}
 		}

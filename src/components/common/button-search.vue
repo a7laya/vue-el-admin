@@ -5,13 +5,13 @@
 			<!-- 左边 -->
 			<slot name="left"></slot>
 			<!-- 右边 -->
-			<slot name="right">
-				<div class="ml-auto animated faster" :class="superSearch ? 'fadeOutRight' : 'fadeInRight'" v-if='showSeach'>
-					<el-input v-model="keyword" size="mini" :placeholder="placeholder" style="width: 140px;"></el-input>
+			<div class="ml-auto animated faster" :class="superSearch ? 'fadeOutRight' : 'fadeInRight'" v-if='showSeach'>
+				<slot name="right">
+					<el-input v-model="keyword" size="mini" :placeholder="placeholder" :style="'width: '+width+'px;'"></el-input>
 					<el-button type="info" size="mini" class="ml-2" @click="$emit('search', keyword)">搜索</el-button>
 					<el-button type="" size="mini" @click='openSuperSearch'>高级搜索</el-button>
-				</div>
-			</slot>
+				</slot>
+			</div>
 		</div>
 		<!-- 高级搜索弹框 -->
 		<div class="animated fadeInRight faster" v-show="superSearch">
@@ -31,6 +31,10 @@
 <script>
 	export default {
 		props: {
+			width: {
+				type: [Number,String],
+				default: 140
+			},
 			placeholder: {
 				type: String,
 				default: ''

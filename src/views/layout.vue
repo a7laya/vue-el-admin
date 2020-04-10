@@ -17,8 +17,9 @@
 					<el-menu-item v-for="(item,index) in navBar.list" :key="index" :index="index | numToString">{{item.name}}</el-menu-item>
 					<el-submenu index="100">
 						<template slot="title">
-							<el-avatar size="small" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"></el-avatar>
-							summer
+							<el-avatar size="small"  
+							:src="user.avatar ? user.avatar : 'https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png'"></el-avatar>
+							{{user.username}}
 						</template>
 						<el-menu-item index="100-1">修改</el-menu-item>
 						<el-menu-item index="100-2">退出</el-menu-item>
@@ -61,6 +62,7 @@
 
 <script>
 import common from "@/common/mixins/common.js"
+import { mapState } from 'vuex'
 export default {
 	mixins:[common],
 	data() {
@@ -92,6 +94,11 @@ export default {
 		}
 	},
 	computed: {
+		// 管理员信息
+		...mapState({
+			user: state=>state.user.user,
+			// navBar: state=>state.menu.navBar,
+		}),
 		// 根据顶部菜单选中的索引，获取侧边菜单list里面的menu
 		slideMenus(){
 			return this.navBar.list[this.navBar.active].subMenu || []
@@ -140,7 +147,10 @@ export default {
 		// 点击顶部菜单后获取设置对应的索引值，并跳转
 		handleSelect(key, keyPath) {
 			if(key === '100-1') return console.log("key:修改");
-			if(key === '100-2') return console.log("key:退出");
+			if(key === '100-2') {
+				// 退出登录
+				return this.logout();
+			}
 			// 改变激活值
 			this.navBar.active = key
 			// 默认选中第一个
@@ -163,6 +173,22 @@ export default {
 				name: this.slideMenus[key].pathname
 			})
 		},
+		// 退出登录
+		logout(){
+			this.axios.post('/admin/logout',{},{token: true,loading:true}).then(res=>{
+				console.log("res:",res)
+				this.$message('退出成功')
+				// 清除状态和本地存储
+				this.$store.commit('logout')
+				// 返回登录页
+				this.$router.push({name: 'login'})
+			}).catch(err => {
+				// 清除状态和本地存储
+				this.$store.commit('logout')
+				// 返回登录页
+				this.$router.push({name: 'login'})
+			})
+		}
 	}
 };
 </script>

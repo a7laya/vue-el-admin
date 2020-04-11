@@ -28,6 +28,9 @@ export default {
 	created() {
 		// 初始化用户信息
 		this.$store.commit('initUser')
+		// 初始化菜单
+		this.$store.commit('initNavBar')
+		
 	},
 	methods:{
 		// 选择图片

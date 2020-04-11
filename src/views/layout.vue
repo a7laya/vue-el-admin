@@ -14,7 +14,7 @@
 					text-color="#fff"
 					active-text-color="#ffd04b"
 				>
-					<el-menu-item v-for="(item,index) in navBar.list" :key="index" :index="index | numToString">{{item.name}}</el-menu-item>
+					<el-menu-item v-for="(item,index) in navBar.list" :key="index" :index="index|numToString">{{item.name}}</el-menu-item>
 					<el-submenu index="100">
 						<template slot="title">
 							<el-avatar size="small"  
@@ -67,13 +67,13 @@ export default {
 	mixins:[common],
 	data() {
 		return {
-			navBar: [], // 导航栏相关
+			// navBar: [], // 导航栏相关
 			bran: [], // 面包屑导航
 		};
 	},
 	created() {
 		// 初始化菜单
-		this.navBar = this.$conf.navBar
+		// this.navBar = this.$conf.navBar
 		// 获取面包屑导航
 		this.getRouterBran()
 		// 初始化选中菜单 刷新或者载入的话
@@ -97,19 +97,24 @@ export default {
 		// 管理员信息
 		...mapState({
 			user: state=>state.user.user,
-			// navBar: state=>state.menu.navBar,
+			navBar: state=>state.menu.navBar,
 		}),
 		// 根据顶部菜单选中的索引，获取侧边菜单list里面的menu
 		slideMenus(){
-			return this.navBar.list[this.navBar.active].subMenu || []
+			let item = this.navBar.list[this.navBar.active]
+			return item ? item.subMenu : []
 		},
 		// 获取侧边菜单subActive
 		slideMenusActive: {
 			get(){
-				return this.navBar.list[this.navBar.active].subActive || "0"
+				let item = this.navBar.list[this.navBar.active]
+				return item ? item.subActive : "0"
 			},
 			set(val){
-				this.navBar.list[this.navBar.active].subActive = val
+				let item = this.navBar.list[this.navBar.active]
+				if(item) {
+					item.subActive = val
+				}
 			}
 		}
 	},
@@ -154,10 +159,9 @@ export default {
 			// 改变激活值
 			this.navBar.active = key
 			// 默认选中第一个
-			this.slideMenusActive = 0
+			this.slideMenusActive = '0'
 			// 默认跳转到当前激活的那个
 			if(this.slideMenus.length>0){
-				console.log('this.slideMenus',this.slideMenus);
 				this.$router.push({
 					name: this.slideMenus[0].pathname
 				})

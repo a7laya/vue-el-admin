@@ -29,6 +29,7 @@
 </template>
 
 <script>
+	import { mapGetters } from 'vuex'
 	export default {
 		data(){
 			return {
@@ -47,6 +48,9 @@
 				}
 			}
 		},
+		computed: {
+			...mapGetters(['adminIndex'])
+		},
 		methods:{
 			submit(){
 				this.$refs.rulesForm.validate((e)=>{
@@ -56,15 +60,20 @@
 					this.loading = true
 					this.axios.post('/admin/login',this.form).then(res=>{
 						console.log("res:",res)
+						let data = res.data.data
 						//  == 保存登录状态 == 存入vuex - 本地
-						this.$store.commit('login',res.data.data)
+						this.$store.commit('login',data)
+						//  == 保存权限规则 == 
+						if(data.role && data.role.rules){
+							window.sessionStorage.setItem('rules',JSON.stringify(data.role.rules))
+						}
 						//  == 生成后台菜单 == 
-						this.$store.commit('createNavBar',res.data.data.tree)
+						this.$store.commit('createNavBar',data.tree)
 						// 成功提示
 						this.$message('登录成功')
 						this.loading = false
 						// 跳转到后台首页
-						this.$router.push({name:'index'})
+						this.$router.push({name:this.adminIndex})
 					}).catch(err => {
 					this.loading = false
 					})

@@ -29,8 +29,10 @@ router.beforeEach((to, from, next) => {
 				return item.rule_id > 0 && item.desc === to.name
 			})
 			// 如果找不到 相应的菜单则跳到来之前的页面
-			Vue.prototype.$message.error('你没有权限访问该页面')
-			if(index === -1) return next({name: from.name ? from.name : 'error_404'});
+			if(index === -1){
+				Vue.prototype.$message.error('你没有权限访问该页面')
+				return next({name: from.name ? from.name : 'error_404'});
+			} 
 		}
 		next();
 	} else {

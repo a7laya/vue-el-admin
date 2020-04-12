@@ -70,6 +70,33 @@ Vue.use(VueDND)
 import $conf from "./common/config/config.js"
 Vue.prototype.$conf = $conf
 
+
+// 配置全局指令
+Vue.directive('auth', {
+	inserted(el, binding, vnode, oldVnode){
+		let user = window.sessionStorage.getItem('user')
+		user = user ? JSON.parse(user) : {}
+		
+		// user.super === 1 表示该账户为超级管理员,那么跳过验证
+		if(user.super) return 
+		
+		// 执行权限验证
+		let rules = user.ruleNames || []
+		let v = rules.find(item => item === binding.value)
+		if(!v){
+			// 验证失败 移除dom
+			el.remove()
+		}
+		
+		// console.log("==== inserted ====")
+		// console.log("el:",el)
+		// console.log("binding:",binding)
+		// console.log("vnode:",vnode)
+		// console.log("oldVnode:",oldVnode)
+	},
+})
+
+
 Vue.config.productionTip = false
 
 new Vue({

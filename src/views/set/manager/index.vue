@@ -4,7 +4,7 @@
 			<!-- 管理员列表 -->
 			<el-tab-pane label="管理员列表" name="second">
 				<div class="d-flex align-items-center">
-					<el-button type="primary" @click="openModel(false)" size="small">添加管理员</el-button>
+					<el-button type="primary" @click="openModel(false)" size="small" v-auth="'管理员管理'">添加管理员</el-button>
 					<el-input v-model="keyword" size="mini" placeholder="请输入关键字" class="ml-auto mr-1" style="width: 220px;"></el-input>
 					<el-button type="info" size="mini">搜索</el-button>
 				</div>
@@ -12,7 +12,7 @@
 				<el-table border class="mt-3" :data="managerList" style="width: 100%">
 					<el-table-column label="管理员头像" align="center">
 						<template slot-scope="scope">
-							<el-avatar :src="scope.row.avatar" size="50"></el-avatar>
+							<el-avatar :src="scope.row.avatar"></el-avatar>
 						</template>
 					</el-table-column>
 					<el-table-column prop="username" label="登录账号" align="center" width="122"></el-table-column>
@@ -40,7 +40,7 @@
 			<!-- 角色列表 -->
 			<el-tab-pane label="角色列表" name="third">
 				<div class="d-flex align-items-center">
-					<el-button type="primary" @click="openModel(false)" size="small">添加角色</el-button>
+					<el-button type="primary" @click="openModel(false)" size="small" v-auth="'角色管理'">添加角色</el-button>
 				</div>
 				<!-- 表格 -->
 				<el-table border class="mt-3" :data="groupList" style="width: 100%">
@@ -184,11 +184,19 @@ export default {
 				label: 'label',
 				status: 1,
 				editStatus: false,
+			},
+			rules:{
+				name: [
+					{required: true, message: "请输入用户名", trigger: "blur"},
+				],
+				level: [
+					{required: true, message: "请输入密码", trigger: "blur"},
+				]
 			}
 		};
 	},
 	methods: {
-		onSubmit(){
+		submit(){
 			console.log("保存")
 		},
 		// 打开模态框

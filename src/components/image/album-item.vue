@@ -6,11 +6,11 @@
 		:class="{ 'active sum-active': active }">
 		{{ item.name }}
 		<span class="btn btn-light btn-sm ml-auto" v-if="!showOption">
-			{{ item.num }}
+			{{ item.images_count }}
 		</span>
 		<el-dropdown class="ml-auto" v-else>
 			<span class="btn btn-light btn-sm">
-				{{ item.num }}
+				{{ item.images_count }}
 				<i class="el-icon-arrow-down el-icon--right"></i>
 			</span>
 			<!-- 相册的包含数量和操作 -->

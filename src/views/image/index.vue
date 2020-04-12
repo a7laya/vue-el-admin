@@ -123,6 +123,7 @@
 import albumItem from '@/components/image/album-item.vue';
 export default {
 	components: { albumItem },
+	inject:['layout'],
 	data() {
 		return {
 			searchForm: {
@@ -175,6 +176,7 @@ export default {
 		// 初始化数据
 		__init() {
 			// 获取相册列表
+			this.layout.showLoading()
 			this.axios.get('/admin/imageclass/' + this.albumPage, { token: true }).then(res => {
 				let result = res.data.data;
 				this.albums = result.list;
@@ -182,13 +184,16 @@ export default {
 				
 				// 获取选中相册下图片列表
 				this.getImageList();
-			});
+			}).catch(err=>{
+				this.layout.hideLoading()
+			})
 		},
 		// 获取选中相册下图片列表
 		getImageList() {
+			this.layout.showLoading()
 			// 先清空列表
 			this.imageList = [];
-			this.axios.get(this.getImageListUrl, { token: true, loading: true }).then(res => {
+			this.axios.get(this.getImageListUrl, { token: true}).then(res => {
 				if (!res) return;
 				let result = res.data.data;
 				this.imageList = result.list.map(item => {
@@ -201,7 +206,10 @@ export default {
 					};
 				});
 				this.total = result.totalCount
-			});
+				this.layout.hideLoading()
+			}).catch(err=>{
+				this.layout.hideLoading()
+			})
 		},
 		// 切换相册
 		albumChange(index) {
@@ -252,8 +260,18 @@ export default {
 		},
 		// 修改相册
 		albumEdit() {
-			this.albums[this.albumEditIndex].name = this.albumForm.name;
-			this.albums[this.albumEditIndex].order = this.albumForm.order;
+			this.layout.showLoading()
+			let item = this.albums[this.albumEditIndex]
+			this.axios.post("/admin/imageclass/"+item.id,this.albumForm,{token: true}).then(res=>{
+				let result = res.data.data
+				if(result){
+					item.name = this.albumForm.name
+					item.order = this.albumForm.order
+				}
+				this.layout.hideLoading()
+			}).catch(err => {
+				this.layout.hideLoading()
+			})
 		},
 		// 追加相册
 		albumAdd() {

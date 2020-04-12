@@ -14,7 +14,7 @@
 				<i class="el-icon-arrow-down el-icon--right"></i>
 			</span>
 			<!-- 相册的包含数量和操作 -->
-			<el-dropdown-menu slot="dropdown">
+			<el-dropdown-menu slot="dropdown" @click.stop.native='false'>
 				<el-dropdown-item
 				@click.stop.native="$emit('edit',{index,item})">修改</el-dropdown-item>
 				<el-dropdown-item 

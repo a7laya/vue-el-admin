@@ -38,7 +38,7 @@
 					</el-menu>
 				</el-aside>
 				<!-- 主布局 -->
-				<el-main class="bg-white" style="padding-bottom: 60px;position: relative;">
+				<el-main class="bg-white" style="padding-bottom: 60px;position: relative;" v-loading='loading'>
 					<!-- 面包屑导航 -->
 					<div class="border-bottom mb-2 bg-white" style="margin: -20px;padding: 10px;"
 					v-if="this.bran.length>0">
@@ -65,10 +65,16 @@ import common from "@/common/mixins/common.js"
 import { mapState } from 'vuex'
 export default {
 	mixins:[common],
+	provide() {
+		return {
+			layout: this
+		}
+	},
 	data() {
 		return {
 			// navBar: [], // 导航栏相关
 			bran: [], // 面包屑导航
+			loading: false
 		};
 	},
 	created() {
@@ -129,6 +135,14 @@ export default {
 				this.$router.push({name:this.navBar.list[data.top].subMenu[data.left].pathname})
 			}
 			
+		},
+		// 显示loading
+		showLoading(){
+			this.loading = true
+		},
+		// 隐藏loading
+		hideLoading(){
+			this.loading = false
 		},
 		// 获取面包屑
 		getRouterBran(){

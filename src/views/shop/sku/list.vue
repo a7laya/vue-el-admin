@@ -31,8 +31,8 @@
 		<el-footer class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-				 :page-sizes="[100, 200, 300, 400]" :page-size="100" layout="total, sizes, prev, pager, next, jumper" :total="400">
+				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page.current"
+				 :page-sizes="page.sizes" :page-size="page.size" layout="total, sizes, prev, pager, next, jumper" :total="page.total">
 				</el-pagination>
 			</div>
 		</el-footer>
@@ -75,6 +75,7 @@
 <script>
 	import buttonSearch from '@/components/common/button-search.vue';
 	export default {
+		inject: ['layout'],
 		components: {
 			buttonSearch
 		},
@@ -97,49 +98,44 @@
 						{required: true, message: "规格项目不能为空", trigger: "blur"},
 					]
 				},
-				tableData: [
-					{
-						name: '颜色1', 
-						value: '棕色,蓝色',
-						order: 50,
-						status: 1, // 1 启用  0 禁用
-						id: 1
-					},
-					{
-						name: '颜色2', 
-						value: '棕色,蓝色',
-						order: 50,
-						status: 1, // 1 启用  0 禁用
-						id: 2
-					},
-					{
-						name: '颜色3', 
-						value: '棕色,蓝色',
-						order: 50,
-						status: 1, // 1 启用  0 禁用
-						id: 3
-					},
-					{
-						name: '颜色4', 
-						value: '棕色,蓝色',
-						order: 50,
-						status: 1, // 1 启用  0 禁用
-						id: 4
-					},
-					{
-						name: '颜色5', 
-						value: '棕色,蓝色',
-						order: 50,
-						status: 1, // 1 启用  0 禁用
-						id: 5
-					},
-				],
+				tableData: [],
+				page: {
+					total: 0, // 数据总条数
+					current: 1, // 当前页
+					size: 10,
+					sizes: [10,20,50,100],
+				},
 				multipleSelection: [], // 选中的数据
-				currentPage: 1,
 				createModel: false,
 			};
 		},
+		created() {
+			this.getList()
+		},
 		methods: {
+			// 获取后端数据
+			getList(){
+				this.layout.showLoading()
+				let url = '/admin/skus/'+this.page.current+'?limit=' + this.page.size
+				this.axios.get(url,{token:true})
+					.then(res=>{
+						console.log('res:',res)
+						let data = res.data.data
+						this.page.total = data.totalCount
+						this.tableData = data.list.map(item => {
+							return {
+								id: item.id,
+								name: item.name,
+								value: item.default,
+								order: item.order,
+								status: item.status, // 1 启用  0 禁用
+							}
+						})
+						this.layout.hideLoading()
+					}).catch(err => {
+						this.layout.hideLoading()
+					})
+			},
 			// 打开模态框
 			openModel(e = false){
 				// 增加
@@ -242,9 +238,13 @@
 			// 分页动作
 			handleSizeChange(val) {
 				console.log(`每页 ${val} 条`);
+				this.page.size = val
+				this.getList()
 			},
 			handleCurrentChange(val) {
 				console.log(`当前页: ${val}`);
+				this.page.current = val
+				this.getList()
 			},
 		}
 	};

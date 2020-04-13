@@ -102,8 +102,13 @@
 		</el-dialog>
 
 		<!-- 上传图片模态框 -->
-		<el-dialog title="上传图片" :visible.sync="uploadModel">
-			<el-upload class="upload-demo w-100 text-center" drag action="https://jsonplaceholder.typicode.com/posts/" multiple>
+		<el-dialog title="上传图片" :visible.sync="uploadModel" @close="__init">
+			<el-upload class="upload-demo w-100 text-center" drag multiple 
+			action="/admin/image/upload"
+			:headers="{token:$store.state.user.token}"
+			:data="{image_class_id:image_class_id}"
+			name='img'
+			:on-success="uploadSuccess">
 				<i class="el-icon-upload"></i>
 				<div class="el-upload__text">
 					将文件拖到此处，或
@@ -144,7 +149,7 @@ export default {
 			previewUrl: '', // 预览的图片地址
 			
 			imageList: [], // 图片列表
-			chooseList: [], // 选中的数组
+			chooseList: [], // 选中的图片的数组
 			currentPage: 1,
 			pageSize: 10, // 每页显示多少条图片
 			pageSizes: [10,20,50,100], // 显示条目选项
@@ -177,6 +182,7 @@ export default {
 		__init() {
 			// 获取相册列表
 			this.layout.showLoading()
+			this.chooseList = []
 			this.axios.get('/admin/imageclass/' + this.albumPage, { token: true }).then(res => {
 				let result = res.data.data;
 				this.albums = result.list;
@@ -215,7 +221,7 @@ export default {
 		albumChange(index) {
 			this.albumIndex = index;
 			// 获取选中相册下图片列表
-			this.getImageList();
+			this.__init();
 		},
 		// 删除相册
 		albumDel({ index, item }) {
@@ -225,11 +231,18 @@ export default {
 				cancelButtonText: '取消',
 				type: 'warning'
 			}).then(() => {
-				that.albums.splice(index, 1);
-				this.$message({
-					type: 'success',
-					message: '"' + item.name + '"删除成功!'
-				});
+				this.axios.delete("/admin/imageclass/"+item.id,{token: true}).then(res=>{
+					if(!res.data.data) return
+					this.$message({
+						type: 'success',
+						message: '"' + item.name + '"删除成功!'
+					});
+					this.__init()
+					this.layout.hideLoading()
+				}).catch(err => {
+					this.layout.hideLoading()
+				})
+				
 			});
 		},
 		// 打开相册修改 | 创建框
@@ -260,33 +273,45 @@ export default {
 		},
 		// 修改相册
 		albumEdit() {
-			this.layout.showLoading()
 			let item = this.albums[this.albumEditIndex]
 			this.axios.post("/admin/imageclass/"+item.id,this.albumForm,{token: true}).then(res=>{
 				let result = res.data.data
 				if(result){
-					item.name = this.albumForm.name
-					item.order = this.albumForm.order
+					this.$message({
+						message: '修改成功',
+						type: 'success'
+					})
+					this.__init()
 				}
 				this.layout.hideLoading()
 			}).catch(err => {
 				this.layout.hideLoading()
 			})
 		},
-		// 追加相册
+		// 创建相册
 		albumAdd() {
-			this.albums.unshift({
-				name: this.albumForm.name,
-				order: this.albumForm.order
-			});
+			this.axios.post("/admin/imageclass",this.albumForm,{token: true}).then(res=>{
+				let result = res.data.data
+				if(result){
+					this.$message({
+						message: '创建成功',
+						type: 'success'
+					})
+					this.__init()
+				}
+				this.layout.hideLoading()
+			}).catch(err => {
+				this.layout.hideLoading()
+			})
 		},
 		// 预览图片
 		previewImage(url) {
 			this.previewUrl = url;
 			this.previewModel = true;
 		},
-		// 编辑图片名称
+		// 修改图片名称
 		imageEdit({ item, index }) {
+			this.layout.showLoading()
 			this.$prompt('请输入新名称', '提示', {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
@@ -295,11 +320,19 @@ export default {
 					if (val === '') return '图片名称不能为空';
 				}
 			}).then(({ value }) => {
-				item.name = value;
-				this.$message({
-					type: 'success',
-					message: '图片名称已改为: ' + value
-				});
+				this.axios.post("/admin/image/"+item.id,{name:value},{token: true}).then(res=>{
+					if(!res.data.data) return
+					item.name = value
+					// this.__init()
+					this.$message({
+						type: 'success',
+						message: '图片名称已改为: ' + value
+					});
+					this.layout.hideLoading()
+				}).catch(err => {
+					this.layout.hideLoading()
+				})
+				
 			});
 		},
 		// 取消选中
@@ -355,12 +388,40 @@ export default {
 			// 重置本身序号
 			item.checkOrder = 0;
 		},
+		// 删除单张图片
+		imageDel(obj) {
+			this.axios.delete('/admin/image/'+obj.item.id,{token: true}).then(res=>{
+				if(!res.data.data) return
+				// this.imageList.splice(obj.index,1)
+				this.__init()
+				this.layout.hideLoading()
+				this.$message({
+					type: 'success',
+					message: '成功删除了 ' + obj.item.name
+				})
+			}).catch(err => {
+				this.layout.hideLoading()
+			})
+		},
 		// 批量删除图片
 		imageDelAll() {
+			this.axios.post("/admin/image/delete_all",{
+				ids: this.chooseList.map(v=>v.id)
+			},{token: true}).then(res=>{
+				this.$message({
+					type:'success',
+					message: '删除成功'
+				})
+				this.__init()
+				this.chooseList = [];
+				this.layout.hideLoading()
+			}).catch(err => {
+				this.layout.hideLoading()
+			})
 			// 找到imageList里面不包含在chooseList里面的元素，重新赋值给list
-			let list = this.imageList.filter(img => !this.chooseList.some(c => c.id === img.id));
-			this.imageList = list;
-			this.chooseList = [];
+			// let list = this.imageList.filter(img => !this.chooseList.some(c => c.id === img.id));
+			// this.imageList = list;
+			// this.chooseList = [];
 		},
 		// 删除图片询问
 		ifImageDel(obj) {
@@ -371,11 +432,12 @@ export default {
 				type: 'warning'
 			}).then(() => {
 				// 根据obj.all来判断是否进行批量删除
-				obj.all ? this.imageDelAll() : this.imageList.splice(index, 1);
-				this.$message({
-					type: 'success',
-					message: '删除成功!'
-				});
+				if(obj.all){
+					// 批量删除
+					return this.imageDelAll() 
+				}
+				// 删除单张
+				return this.imageDel(obj)
 			});
 		},
 
@@ -399,6 +461,12 @@ export default {
 				this.albumPage++
 			}
 			this.__init()
+		},
+		// 图片上传成功后
+		uploadSuccess(res, file, file_list){
+			console.log("res:",res)
+			console.log("file:",file)
+			console.log("file_list:",file_list)
 		}
 	}
 };

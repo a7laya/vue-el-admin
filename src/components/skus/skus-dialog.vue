@@ -2,7 +2,8 @@
 	<el-dialog title="商品规格选择" :visible.sync="createModel" width="80%" top="5vh">
 		<el-container style="height: 70vh;position:relative;margin: -30px -20px;">
 			<el-container>
-				<el-aside width="200px" class="border-right bg-white" style="position: absolute;top: 0;bottom: 0;left: 0;">
+				<el-aside width="200px" class="border-right bg-white" 
+				style="position: absolute;top: 0;bottom: 50px;left: 0;">
 					<!-- 侧边 -->
 					<ul class="list-group list-group-flush">
 						<!-- 列表 | 规格卡片标题 -->
@@ -17,6 +18,19 @@
 						</li>
 					</ul>
 				</el-aside>
+				<el-footer class="border bg-white d-flex align-items-center justify-content-center"
+				style="position: absolute;bottom: 0px;left: 0;height: 50px; width: 200px;">
+					<!-- 分页 -->
+					<el-pagination 
+					@size-change="handleSizeChange" 
+					@current-change="handleCurrentChange" 
+					:current-page="page.current"
+					:page-sizes="page.sizes" 
+					:page-size="page.size" 
+					layout="prev,next" 
+					:total="page.total">
+					</el-pagination>
+				</el-footer>
 				<el-header style="position: absolute;top: 0;left: 200px; right: 0; height: 60px; line-height: 60px;" class="border-top border-bottom">
 					<el-button type="primary" size="mini" @click="doChooseAll">{{ isChooseAll ? '取消全选' : '全选' }}</el-button>
 				</el-header>
@@ -52,66 +66,39 @@ export default {
 	data() {
 		return {
 			preUrl: 'skus',
+			loading: false,  // 重写loading
 			createModel: false,
 			callback: false,
 			chooseList: [], // 选中的数组
-			// 数据
 			skuIndex: 0,
 			skusList: [],
-			// skusList: [{
-			// 		name: '颜色', // 规格名称
-			// 		type: 0, // 规格类型 0无 1颜色 2图片
-			// 		list: [
-			// 			// 规格属性列表
-			// 			{
-			// 				id: 1,
-			// 				name: '黄色', // 文字
-			// 				color: '', // 颜色
-			// 				image: '',// 图片
-			// 				ischeck: false
-			// 			},
-			// 			{
-			// 				id: 2,
-			// 				name: '红色', // 文字
-			// 				color: '', // 颜色
-			// 				image: '',// 图片
-			// 				ischeck: false
-			// 			}
-			// 		]
-			// 	},{
-			// 		name: '尺寸', // 规格名称
-			// 		type: 0, // 规格类型 0无 1颜色 2图片
-			// 		list: [
-			// 			// 规格属性列表
-			// 			{
-			// 				id: 3,
-			// 				name: 'SM', // 文字
-			// 				color: '', // 颜色
-			// 				image: '',// 图片
-			// 				ischeck: false
-			// 			},
-			// 			{
-			// 				id: 4,
-			// 				name: 'XXL', // 文字
-			// 				color: '', // 颜色
-			// 				image: '',// 图片
-			// 				ischeck: false
-			// 			},
-			// 		]
-			// }]
 		};
 	},
 	computed:{
 		// 当前规格下的规格属性列表
 		skuItems(){
-			return this.skusList[this.skuIndex].list
+			return this.skusList[this.skuIndex] && this.skusList[this.skuIndex].list
 		},
 		// 是否全选
 		isChooseAll(){
-			return this.skuItems.length === this.chooseList.length
+			return this.skuItems ? this.skuItems.length === this.chooseList.length : false
 		}
 	},
 	methods: {
+		// 获取mixins数据
+		getListResult(e){
+			this.skusList = e.list.map(item => {
+				item.list = item.default.split(',').map(name=>{
+					return {
+						name: name,
+						image: "",
+						color: "",
+						ischeck: false
+					}
+				})
+				return item
+			})
+		},
 		// 打开弹出层
 		chooseSkus(callback) {
 			this.callback = callback;
@@ -123,6 +110,7 @@ export default {
 			if (typeof this.callback === 'function') {
 				let item = this.skusList[this.skuIndex]
 				this.callback({
+					id: item.id,
 					name: item.name,
 					type: item.type,
 					list: this.chooseList
@@ -174,13 +162,13 @@ export default {
 				v.ischeck = true
 				return v
 			})
-			console.log("this.skusList:",this.skusList)
+			// console.log("this.skusList:",this.skusList)
 		},
 		// 取消选中所有
 		unChooseAll(){
 			// 取消选中的状态
 			this.skuItems.forEach(v=>v.ischeck = false)
-			console.log("this.skusList:",this.skusList)
+			// console.log("this.skusList:",this.skusList)
 			// 清空选中列表
 			return this.chooseList = []
 		}

@@ -34,7 +34,7 @@ axios.interceptors.request.use( config =>{
 	if(config.token === true) {
 		config.headers['token'] = token
 	}
-	console.log("请求拦截成功:",config)
+	console.log("请求拦截成功:")
 	// 发送请求之前做什么
 	if(config.loading === true) showLoading()
 	return config
@@ -46,12 +46,12 @@ axios.interceptors.request.use( config =>{
 
 // 添加响应拦截器
 axios.interceptors.response.use( response =>{
-	console.log("响应拦截成功",response)
+	console.log("响应拦截成功")
 	// 对响应数据做什么
 	hideLoading()
 	return response
 }, err => {
-	console.log("响应拦截失败",err.response)
+	console.log("响应拦截失败")
 	// 全局错误提示
 	if(err.response && err.response.data && err.response.data.errorCode){
 		Message.error(err.response.data.msg)

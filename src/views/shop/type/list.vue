@@ -59,9 +59,10 @@
 				</el-form-item>
 				<el-form-item label="关联规格">
 					<div class="d-flex">
-						<span class="sku-list-item px-3 py-2 border rounded mr-3 text-center">
-							<font>颜色</font>
-							<i class="el-icon-delete"></i>
+						<span class="sku-list-item px-3 py-2 border rounded mr-3 text-center"
+						v-for="(item,index) in form.sku_list" :key="index">
+							<font>{{item.name}}</font>
+							<i class="el-icon-delete" @click="deleteFormSkuList(index,item)"></i>
 						</span>
 						<el-button size="mini" @click='chooseSkus'><i class="el-icon-plus"></i></el-button>
 					</div>
@@ -98,11 +99,11 @@
 									v-if="scope.row.isEdit"
 									type="textarea"
 									:rows="2"
-									v-model="scope.row.value"
+									v-model="scope.row.default"
 									placeholder="一行一个属性值,多个属性值换行输入"
 									size="mini"
 								></el-input>
-								<font v-else>{{ scope.row.value }}</font>
+								<font v-else>{{ scope.row.default }}</font>
 							</template>
 						</el-table-column>
 						<el-table-column label="操作" width="180">
@@ -136,7 +137,7 @@ export default {
 	},
 	data() {
 		return {
-			preUrl: 'goods_type',
+			preUrl: 'goods_type', 
 			editIndex: -1,
 			form: {
 				name: '',
@@ -144,7 +145,8 @@ export default {
 				status: 1,
 				sku_list: [],
 			},
-			value_list: [{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }],
+			value_list: [],
+			// value_list: [{ order: 50, name: '屏幕', type: 'input', status: 1, default: '属性值', isEdit: false }],
 			// 表单验证
 			rules: {
 				name: [{ required: true, message: '类型名称不能为空', trigger: 'blur' }]
@@ -162,8 +164,8 @@ export default {
 			// 			{ id: 2, name: '尺寸' }
 			// 		],
 			// 		value_list: [
-			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false },
-			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }
+			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, default: '属性值', isEdit: false },
+			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, default: '属性值', isEdit: false }
 			// 		]
 			// 	}
 			// ],
@@ -171,6 +173,12 @@ export default {
 			// currentPage: 1,
 			createModel: false
 		};
+	},
+	computed: {
+		// 关联到品类下的规格id组成的一维数组
+		skus_id(){
+			return this.form.sku_list.map(item=>item.id)
+		}
 	},
 	filters: {
 		formatValue(value_list) {
@@ -226,7 +234,7 @@ export default {
 						result = result && false
 						message.push(`属性列表第${index+1}行,属性名称不能为空`)
 					} 
-					if(item.type !== 'input' && item.value === '') {
+					if(item.type !== 'input' && item.default === '') {
 						result = result && false
 						message.push(`属性列表第${index+1}行,属性值不能为空`)
 					}
@@ -239,10 +247,17 @@ export default {
 				});
 				let msg = '添加';
 				if (this.editIndex === -1) {
-					this.tableData.unshift({
+					let value_list = this.value_list.map(item => {
+						if(item.default) item.default = item.default.replace(/\n/g,',')
+						return item
+					})
+					let obj = {
 						...this.form,
-						value_list: [...this.value_list]
-					});
+						skus_id: this.skus_id,
+						value_list: [...value_list]
+					}
+					// 直接调用mixins里面的方法就ok了
+					this.addOrEdit(obj)
 				} else {
 					this.tableData.splice(this.editIndex, 1, {
 						...this.form,
@@ -252,10 +267,6 @@ export default {
 				}
 				// 关闭模态框 并提示成功
 				this.createModel = false;
-				this.$message({
-					message: msg + '成功',
-					type: 'success'
-				});
 			});
 		},
 		// 分页动作
@@ -289,8 +300,24 @@ export default {
 		},
 		// 选择关联规格
 		chooseSkus(){
-			this.app.chooseSkus(v=>{
-				console.log("v:",v)
+			this.app.chooseSkus(e=>{
+				console.log('e:',e)
+				let index = this.form.sku_list.findIndex(item=>item.id === e.id)
+				if(index > -1) return this.$message({
+					type: 'warning',
+					message: '已存在相同规格'
+				})
+				this.form.sku_list.push(e)
+			})
+		},
+		// 移除关联规格
+		deleteFormSkuList(index,item) {
+			this.$confirm('是否移除 “'+item.name+'” 关联?', '提示', {
+				confirmButtonText: '确定',
+				cancelButtonText: '取消',
+				type: 'warning'
+			}).then(() => {
+				this.form.sku_list.splice(index,1)
 			})
 		}
 		

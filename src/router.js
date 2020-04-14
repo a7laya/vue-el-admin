@@ -12,6 +12,8 @@ router.beforeEach((to, from, next) => {
 	// console.log('from:',from)
 	// console.log('next:',next)
 	let token = window.sessionStorage.getItem('token')
+	let user = window.sessionStorage.getItem('user')
+	if(user) user = JSON.parse(user)
 	if(token){
 		// 已登录 
 		// 防止重复登录
@@ -22,6 +24,8 @@ router.beforeEach((to, from, next) => {
 		// 放行或继续其他验证
 		// 拿到权限
 		if(to.name !== 'error_404'){
+			//  (超级管理员不用验证user.super===1 )
+			if(user && user.super === 1) return next();
 			let rules = window.sessionStorage.getItem('rules')
 			rules = rules ? JSON.parse(rules) : []
 			// 比对要跳转的页面是不是在规格里面 rule_id为0表示1级菜单,可以过滤掉

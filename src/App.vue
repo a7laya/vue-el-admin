@@ -3,7 +3,7 @@
 		<router-view></router-view>
 		
 		<image-dialog ref="imageDialog" :max="maxChooseImage"></image-dialog>
-		
+		<!-- 规格选择框 -->
 		<skus-dialog ref="skusDialog"></skus-dialog>
 	</div>
 </template>

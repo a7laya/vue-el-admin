@@ -6,24 +6,33 @@
 					<!-- 侧边 -->
 					<ul class="list-group list-group-flush">
 						<!-- 列表 | 规格卡片标题 -->
-						<li class="list-group-item list-group-item-action"
-						:class="{'sum-active': skuIndex === index}"
-						v-for="(item,index) in skusList" :key='index'
-						@click="changeSku(index)">{{item.name}}</li>
+						<li
+							class="list-group-item list-group-item-action"
+							:class="{ 'sum-active': skuIndex === index }"
+							v-for="(item, index) in skusList"
+							:key="index"
+							@click="changeSku(index)"
+						>
+							{{ item.name }}
+						</li>
 					</ul>
 				</el-aside>
 				<el-header style="position: absolute;top: 0;left: 200px; right: 0; height: 60px; line-height: 60px;" class="border-top border-bottom">
-					<el-button type="primary" size="mini" @click="doChooseAll">
-						{{isChooseAll ? '取消全选' : '全选'}}
-					</el-button>
+					<el-button type="primary" size="mini" @click="doChooseAll">{{ isChooseAll ? '取消全选' : '全选' }}</el-button>
 				</el-header>
 				<!-- 主题内容 - 图片列表 -->
 				<el-main style="position: absolute;top: 60px;bottom: 0;left: 200px;right: 0;">
 					<div class="d-flex flex-wrap">
-						<span class="rounded border py-1 px-2 m-2" style="cursor: pointer;"
-						:class="{'sum-active': item.ischeck}"
-						v-for="(item,index) in skuItems" :key="index"
-						@click="choose(item)">{{item.name}}</span>
+						<span
+							class="rounded border py-1 px-2 m-2"
+							style="cursor: pointer;"
+							:class="{ 'sum-active': item.ischeck }"
+							v-for="(item, index) in skuItems"
+							:key="index"
+							@click="choose(item)"
+						>
+							{{ item.name }}
+						</span>
 					</div>
 				</el-main>
 			</el-container>
@@ -37,55 +46,59 @@
 
 <script>
 // import albumItem from '@/components/image/album-item.vue';
+import common from '@/common/mixins/common.js';
 export default {
+	mixins:[common],
 	data() {
 		return {
+			preUrl: 'skus',
 			createModel: false,
 			callback: false,
 			chooseList: [], // 选中的数组
 			// 数据
 			skuIndex: 0,
-			skusList: [{
-					name: '颜色', // 规格名称
-					type: 0, // 规格类型 0无 1颜色 2图片
-					list: [
-						// 规格属性列表
-						{	
-							id: 1,
-							name: '黄色', // 文字
-							color: '', // 颜色
-							image: '',// 图片
-							ischeck: false
-						},
-						{	
-							id: 2,
-							name: '红色', // 文字
-							color: '', // 颜色
-							image: '',// 图片
-							ischeck: false
-						}
-					]
-				},{
-					name: '尺寸', // 规格名称
-					type: 0, // 规格类型 0无 1颜色 2图片
-					list: [
-						// 规格属性列表
-						{
-							id: 3,
-							name: 'SM', // 文字
-							color: '', // 颜色
-							image: '',// 图片
-							ischeck: false
-						},
-						{	
-							id: 4,
-							name: 'XXL', // 文字
-							color: '', // 颜色
-							image: '',// 图片
-							ischeck: false
-						},
-					]
-				}]
+			skusList: [],
+			// skusList: [{
+			// 		name: '颜色', // 规格名称
+			// 		type: 0, // 规格类型 0无 1颜色 2图片
+			// 		list: [
+			// 			// 规格属性列表
+			// 			{
+			// 				id: 1,
+			// 				name: '黄色', // 文字
+			// 				color: '', // 颜色
+			// 				image: '',// 图片
+			// 				ischeck: false
+			// 			},
+			// 			{
+			// 				id: 2,
+			// 				name: '红色', // 文字
+			// 				color: '', // 颜色
+			// 				image: '',// 图片
+			// 				ischeck: false
+			// 			}
+			// 		]
+			// 	},{
+			// 		name: '尺寸', // 规格名称
+			// 		type: 0, // 规格类型 0无 1颜色 2图片
+			// 		list: [
+			// 			// 规格属性列表
+			// 			{
+			// 				id: 3,
+			// 				name: 'SM', // 文字
+			// 				color: '', // 颜色
+			// 				image: '',// 图片
+			// 				ischeck: false
+			// 			},
+			// 			{
+			// 				id: 4,
+			// 				name: 'XXL', // 文字
+			// 				color: '', // 颜色
+			// 				image: '',// 图片
+			// 				ischeck: false
+			// 			},
+			// 		]
+			// }]
 		};
 	},
 	computed:{
@@ -143,7 +156,7 @@ export default {
 			// 之前选中
 			let index = this.chooseList.findIndex(v=>v.id === item.id)
 			// 找不到
-			if(index < 0) return 
+			if(index < 0) return
 			// 找到之后就从选中列表中移除
 			this.chooseList.splice(index,1)
 			// 修改选中状态

@@ -2,7 +2,7 @@
 	<div class="bg-white h-100 px-3 py-2" style="margin:-8px -20px 20px -20px; ">
 		<div>
 			<el-button size="medium" type="success" @click="openModel(false)">添加类型</el-button>
-			<el-button size="medium" type="danger" @click="deleteAllConfirm">批量删除</el-button>
+			<el-button size="medium" type="danger" @click="deleteAll">批量删除</el-button>
 		</div>
 		<!-- 表格 -->
 		<el-table border class="mt-3" @selection-change="handleSelectionChange" :data="tableData" style="width: 100%">
@@ -34,15 +34,15 @@
 		<el-footer class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination
-					@size-change="handleSizeChange"
-					@current-change="handleCurrentChange"
-					:current-page="currentPage"
-					:page-sizes="[100, 200, 300, 400]"
-					:page-size="100"
-					layout="total, sizes, prev, pager, next, jumper"
-					:total="400"
-				></el-pagination>
+				<el-pagination 
+				@size-change="handleSizeChange" 
+				@current-change="handleCurrentChange" 
+				:current-page="page.current"
+				:page-sizes="page.sizes" 
+				:page-size="page.size" 
+				layout="total, sizes, prev, pager, next, jumper" 
+				:total="page.total">
+				</el-pagination>
 			</div>
 		</el-footer>
 		<!-- 新增 | 修改类型模态框 -->
@@ -63,7 +63,7 @@
 							<font>颜色</font>
 							<i class="el-icon-delete"></i>
 						</span>
-						<el-button size="mini"><i class="el-icon-plus"></i></el-button>
+						<el-button size="mini" @click='chooseSkus'><i class="el-icon-plus"></i></el-button>
 					</div>
 				</el-form-item>
 				<el-form-item label="属性列表">
@@ -113,7 +113,7 @@
 								<el-button type="text" size="mini" @click="delRow(scope)">删除</el-button>
 							</template>
 						</el-table-column>
-					</el-table>
+					</el-table> 
 				</el-form-item>
 				<el-form-item label=""><el-button type="text" size="mini" icon="el-icon-plus" @click="addValue">添加属性</el-button></el-form-item>
 			</el-form>
@@ -127,12 +127,16 @@
 
 <script>
 import buttonSearch from '@/components/common/button-search.vue';
+import common from '@/common/mixins/common.js'
 export default {
+	inject: ['layout','app'],
+	mixins: [common],
 	components: {
 		buttonSearch
 	},
 	data() {
 		return {
+			preUrl: 'goods_type',
 			editIndex: -1,
 			form: {
 				name: '',
@@ -145,25 +149,26 @@ export default {
 			rules: {
 				name: [{ required: true, message: '类型名称不能为空', trigger: 'blur' }]
 			},
-			tableData: [
-				{
-					id: 1,
-					name: '手机',
-					order: 50,
-					status: 1, // 1 启用  0 禁用
-					sku_list: [
-						// 关联的类型
-						{ id: 1, name: '颜色' },
-						{ id: 2, name: '尺寸' }
-					],
-					value_list: [
-						{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false },
-						{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }
-					]
-				}
-			],
-			multipleSelection: [], // 选中的数据
-			currentPage: 1,
+			tableData: [],
+			// tableData: [
+			// 	{
+			// 		id: 1,
+			// 		name: '手机',
+			// 		order: 50,
+			// 		status: 1, // 1 启用  0 禁用
+			// 		sku_list: [
+			// 			// 关联的类型
+			// 			{ id: 1, name: '颜色' },
+			// 			{ id: 2, name: '尺寸' }
+			// 		],
+			// 		value_list: [
+			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false },
+			// 			{ order: 50, name: '屏幕', type: 'input', status: 1, value: '属性值', isEdit: false }
+			// 		]
+			// 	}
+			// ],
+			// multipleSelection: [], // 选中的数据
+			// currentPage: 1,
 			createModel: false
 		};
 	},
@@ -174,6 +179,14 @@ export default {
 		}
 	},
 	methods: {
+		// 重写mixin中common.js的getListResult方法来处理后端数据
+		getListResult(e){
+			this.tableData = e.list.map(item => {
+				item.value_list = item.goods_type_values
+				item.sku_list = item.skus
+				return item
+			})
+		},
 		// 打开模态框
 		openModel(e = false) {
 			// 增加
@@ -195,14 +208,6 @@ export default {
 			}
 			// 打开dialog
 			this.createModel = true;
-		},
-		// 改变类型状态
-		changeStatus(item) {
-			item.status = item.status === 1 ? 0 : 1;
-			this.$message({
-				type: 'success',
-				message: item.status === 1 ? `已启用: ${item.name}` : `已禁用: ${item.name}`
-			});
 		},
 		// 提交类型
 		submit() {
@@ -253,49 +258,6 @@ export default {
 				});
 			});
 		},
-		// 删除单个类型
-		deleteItem(scope) {
-			this.$confirm('确定删除: ' + scope.row.name, '提示', {
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}).then(() => {
-				this.tableData.splice(scope.$index, 1);
-				this.$message({
-					message: '删除成功',
-					type: 'success'
-				});
-			});
-		},
-		// 表格多选
-		handleSelectionChange(val) {
-			this.multipleSelection = val;
-			console.log('this.multipleSelection:', this.multipleSelection);
-		},
-		// 批量删除
-		deleteAll() {
-			this.multipleSelection.forEach(item => {
-				let index = this.tableData.findIndex(v => v.id === item.id);
-				if (index !== -1) {
-					this.tableData.splice(index, 1);
-				}
-			});
-			this.multipleSelection = [];
-		},
-		// 批量删除确认
-		deleteAllConfirm() {
-			this.$confirm('是否删除选中类型?', '提示', {
-				confirmButtonText: '删除',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}).then(() => {
-				this.deleteAll();
-				this.$message({
-					type: 'success',
-					message: '删除成功!'
-				});
-			});
-		},
 		// 分页动作
 		handleSizeChange(val) {
 			console.log(`每页 ${val} 条`);
@@ -324,7 +286,14 @@ export default {
 					message: '删除成功!'
 				});
 			});
+		},
+		// 选择关联规格
+		chooseSkus(){
+			this.app.chooseSkus(v=>{
+				console.log("v:",v)
+			})
 		}
+		
 	}
 };
 </script>

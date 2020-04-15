@@ -2,7 +2,7 @@
 	<div class="bg-white h-100 px-3 py-2" style="margin:-8px -20px 20px -20px; ">
 		<div>
 			<el-button size="medium" type="success" @click="openModel(false)">添加类型</el-button>
-			<el-button size="medium" type="danger" @click="deleteAll">批量删除</el-button>
+			<el-button size="medium" type="danger"  @click="deleteAll">批量删除</el-button>
 		</div>
 		<!-- 表格 -->
 		<el-table border class="mt-3" @selection-change="handleSelectionChange" :data="tableData" style="width: 100%">
@@ -169,8 +169,6 @@ export default {
 			// 		]
 			// 	}
 			// ],
-			// multipleSelection: [], // 选中的数据
-			// currentPage: 1,
 			createModel: false
 		};
 	},
@@ -189,8 +187,13 @@ export default {
 	methods: {
 		// 重写mixin中common.js的getListResult方法来处理后端数据
 		getListResult(e){
+			// console.log("e:",e)
 			this.tableData = e.list.map(item => {
 				item.value_list = item.goods_type_values
+				item.value_list.forEach(v=>{
+					v.isEdit = false
+					return v
+				})
 				item.sku_list = item.skus
 				return item
 			})
@@ -212,6 +215,7 @@ export default {
 				// 修改
 				this.form = {...e.row};
 				this.value_list = [...e.row.value_list]
+				console.log("this.value_list:",this.value_list)
 				this.editIndex = e.$index;
 			}
 			// 打开dialog
@@ -245,28 +249,22 @@ export default {
 					dangerouslyUseHTMLString: true,
 					message: message.join('<br>')
 				});
-				let msg = '添加';
-				if (this.editIndex === -1) {
-					let value_list = this.value_list.map(item => {
-						if(item.default) item.default = item.default.replace(/\n/g,',')
-						return item
-					})
-					let obj = {
-						...this.form,
-						skus_id: this.skus_id,
-						value_list: [...value_list]
-					}
-					// 直接调用mixins里面的方法就ok了
-					this.addOrEdit(obj)
-				} else {
-					this.tableData.splice(this.editIndex, 1, {
-						...this.form,
-						value_list: [...this.value_list]
-					});
-					msg = '修改';
+				
+				// 👇👇👇 进行添加或修改 👇👇👇
+				
+				// 将value_list属性列表里面的属性值换行改成逗号
+				let value_list = this.value_list.map(item => {
+					if(item.default) item.default = item.default.replace(/\n/g,',')
+					return item
+				})
+				// 组织传入的对象
+				let obj = {
+					...this.form,
+					skus_id: this.skus_id,
+					value_list: [...this.value_list]
 				}
-				// 关闭模态框 并提示成功
-				this.createModel = false;
+				// 直接调用mixins里面的方法就ok了
+				this.addOrEdit(obj,obj.id)
 			});
 		},
 		// 分页动作
@@ -283,6 +281,7 @@ export default {
 		// 编辑属性值
 		editRow(scope) {
 			scope.row.isEdit = !scope.row.isEdit;
+			scope.row.default = scope.row.isEdit ?  scope.row.default.replace(/,/g,'\n') :  scope.row.default.replace(/\n/g,',')
 		},
 		// 删除属性
 		delRow(scope) {

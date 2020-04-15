@@ -111,7 +111,6 @@ export default {
 		
 		// 批量删除
 		deleteAll(){
-			console.log("this.ids:",this.ids)
 			if(!this.ids.length) return this.$message({
 				type: 'warning',
 				message: '请先选中要删除的行'
@@ -122,6 +121,7 @@ export default {
 				type: 'warning'
 			}).then(() => {
 					let url = `/admin/${this.preUrl}/delete_all`
+					console.log("this.ids:",this.ids)
 					let obj = {ids:this.ids}
 					this.showLoading()
 					this.axios.post(url,obj,{token: true}).then(res=>{
@@ -142,6 +142,7 @@ export default {
 		// 修改状态 - 启用 | 禁用
 		changeStatus(item){
 			let status = item.status === 1 ?  0 : 1
+			item.name = item.name || ''
 			let url = `/admin/${this.preUrl}/${item.id}/update_status`
 			let obj = {status}
 			this.showLoading()
@@ -149,7 +150,7 @@ export default {
 				item.status = status
 				this.$message({
 					type: 'success',
-					message: item.status === 1 ? `已启用: ${item.name}` : `已禁用: ${item.name}`,
+					message: item.status === 1 ? `已启用 ${item.name}` : `已禁用 ${item.name}`,
 				});
 				this.hideLoading()
 			}).catch(err => {

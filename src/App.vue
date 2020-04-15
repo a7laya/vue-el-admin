@@ -36,7 +36,7 @@ export default {
 		// 选择图片
 		chooseImage(callback, max = 9){
 			this.maxChooseImage = max
-			this.$refs.imageDialog.chooseImage(callback)
+			this.$refs.imageDialog.chooseImage(callback,max)
 		},
 		// 选择规格
 		chooseSkus(callback){

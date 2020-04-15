@@ -10,14 +10,13 @@
 				<el-form ref="form" :model="search" label-width="80px" inline>
 					<el-form-item label="搜索内容" class="mb-0"><el-input v-model="search.keyword" size="mini" placeholder="手机号/邮箱/会员昵称"></el-input></el-form-item>
 					<el-form-item label="会员等级" class="mb-0">
-						<el-select v-model="search.group_id" placeholder="请选择会员等级" size="mini">
-							<el-option label="0" value="shanghai"></el-option>
-							<el-option label="1" value="beijing"></el-option>
+						<el-select v-model="search.user_level_id" placeholder="请选择会员等级" size="mini">
+							<el-option v-for="(item,index) in user_level" :key="index" :label="item.name" :value="item.id"></el-option>
 						</el-select>
 					</el-form-item>
-					<el-form-item label="发布时间" class="mb-0">
+					<!-- <el-form-item label="发布时间" class="mb-0">
 						<el-date-picker v-model="search.time" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" size="mini"></el-date-picker>
-					</el-form-item>
+					</el-form-item> -->
 					<el-form-item class="mb-0">
 						<el-button type="info" size="mini" class="ml-2" @click="searchEvent">搜索</el-button>
 						<el-button type="" size="mini" @click="clearSearch">清空筛选条件</el-button>
@@ -40,16 +39,18 @@
 					</div>
 				</template>
 			</el-table-column>
-			<el-table-column prop="level.name" label="会员等级" align="center" width="188"></el-table-column>
+			<el-table-column prop="user_level.name" label="会员等级" align="center" width="188"></el-table-column>
 			<el-table-column label="登录/注册" align="center" width="288">
 				<template slot-scope="scope">
 					<div>注册时间：{{scope.row.create_time}}</div>
-					<div>最后登录：{{scope.row.update_time}}</div>
+					<div>最后登录：{{scope.row.last_login_time}}</div>
 				</template>
 			</el-table-column>
 			<el-table-column label="状态" align="center" width="120">
 				<template slot-scope="scope">
-					<el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0"></el-switch>
+					<el-button plain :type="scope.row.status ? 'success' : 'danger'" size="mini" @click="changeStatus(scope.row)">
+						{{ scope.row.status ? '启用' : '禁用' }}
+					</el-button>
 				</template>
 			</el-table-column>
 			<el-table-column label="操作" align="center" width="188">
@@ -64,8 +65,14 @@
 		<el-footer class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-				 :page-sizes="[100, 200, 300, 400]" :page-size="100" layout="total, sizes, prev, pager, next, jumper" :total="400">
+				<el-pagination
+				@size-change="handleSizeChange" 
+				@current-change="handleCurrentChange" 
+				:current-page="page.current"
+				:page-sizes="page.sizes" 
+				:page-size="page.size" 
+				layout="total, sizes, prev, pager, next, jumper" 
+				:total="page.total">
 				</el-pagination>
 			</div>
 		</el-footer>
@@ -131,17 +138,20 @@
 
 <script>
 	import buttonSearch from '@/components/common/button-search.vue';
+	import common from '@/common/mixins/common.js';
 	export default {
-		inject: ['app'],
+		inject: ['app','layout'],
+		mixins: [common],
 		components: {
 			buttonSearch
 		},
 		data() {
 			return {
+				preUrl: 'user',
 				search: {
 					keyword: "",
-					group_id: 0,
-					time: ""
+					user_level_id: "",
+					// time: ""
 				},
 				editIndex: -1,
 				form: {
@@ -155,22 +165,7 @@
 					sex: 0,
 					status: 1,
 				},
-				tableData: [
-					{
-						id: 1, 
-						username: 'laya', 
-						avatar: 'http://127.0.0.1:8080/img/demo1.4419d7d7.jpeg',
-						level_id: 1,
-						level: {
-							id: 1,
-							name: '普通会员'
-						},
-						create_time: '2020-01-01 12:12:12',
-						update_time: '2020-01-01 12:12:12',
-						status: 1, // 1 启用  0 禁用
-					}
-				],
-				currentPage: 1,
+				tableData: [],
 				createModel: false,
 				// 表单验证
 				rules:{
@@ -184,9 +179,20 @@
 						{required: true, message: "昵称不能为空", trigger: "blur"},
 					]
 				},
+				user_level: []
 			};
 		},
 		methods: {
+			// 获取数据
+			getListResult(e){
+				console.log('e.list:',e)
+				this.tableData = e.list
+				this.user_level = e.user_level
+			},
+			// 获取请求列表分页的url
+			getListUrl(){
+				return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.search.keyword}&user_level_id=${this.search.user_level_id}`
+			},
 			// 打开模态框
 			openModel(e = false){
 				// 增加
@@ -212,14 +218,6 @@
 				// 打开dialog
 				this.createModel = true
 			},
-			// 改变会员状态
-			changeStatus(item){
-				item.status = item.status === 1 ?  0 : 1
-				this.$message({
-					type: 'success',
-					message: item.status === 1 ? `已启用: ${item.name}` : `已禁用: ${item.name}`,
-				});
-			},
 			// 提交模态框
 			submit(){
 				// 验证成功后才提交
@@ -244,57 +242,29 @@
 					});
 				})
 			},
-			deleteItem(scope){
-				this.$confirm('确定删除: ' + scope.row.username, '提示', {
-					confirmButtonText: '确定',
-					cancelButtonText: '取消',
-					type: 'warning'
-				}).then(() => {
-					this.tableData.splice(scope.$index,1)
-					this.$message({
-						message: '删除成功',
-						type: 'success'
-					});
-				})
-			},
-			// 批量删除
-			deleteAll(){
-				this.multipleSelection.forEach(item=>{
-					let index = this.tableData.findIndex(v=>v.id === item.id)
-					if(index !== -1){
-						this.tableData.splice(index,1)
-					}
-				})
-				this.multipleSelection = []
-			},
-			
-			// 分页动作
-			handleSizeChange(val) {
-				console.log(`每页 ${val} 条`);
-			},
-			handleCurrentChange(val) {
-				console.log(`当前页: ${val}`);
-			},
 			
 			// 清空筛选条件
 			clearSearch() {
 				this.search = {
 					keyword: "",
-					group_id: 0,
-					time: ""
+					user_level_id: "",
+					// time: ""
 				}
 				this.$refs.buttonSearch.keyword = '';
 				// 通过$refs可以访问子组件的data | methods里面的内容
-				this.$refs.buttonSearch.closeSuperSearch();
+				// this.$refs.buttonSearch.closeSuperSearch();
 			},
 			// 搜索事件
 			searchEvent(e = false) {
 				// 简单搜索
 				if (typeof e === 'string') {
-					return console.log('简单搜索:', e);
+					console.log('简单搜索:', e);
+					this.search.keyword = e
+					return this.getList()
 				}
 				// 高级搜索
-				console.log('高级搜索');
+				console.log('高级搜索',e);
+				this.getList()
 			},
 			// 选择头像
 			chooseImage(){

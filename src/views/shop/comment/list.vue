@@ -5,9 +5,9 @@
 		</div> -->
 		<button-search ref="buttonSearch" @search="searchEvent" @openSuperSearch="form.username = $event" placeholder="要搜索的">
 			<!-- 左边插槽 -->
-			<template #left>
+			<!-- <template #left>
 				<el-button type="danger" size="mini">删除评论</el-button>
-			</template>
+			</template> -->
 
 			<!-- 高级搜索表单插槽 -->
 			<template #form>
@@ -37,8 +37,7 @@
 			</template>
 		</button-search>
 		<!-- 表格 -->
-		<el-table border class="mt-3" @selection-change="handleSelectionChange" :data="tableData" style="width: 100%">
-			<el-table-column type="selection" width="55" align="center"></el-table-column>
+		<el-table border class="mt-3" :data="tableData" style="width: 100%">
 			<el-table-column type="expand">
 				<template slot-scope="scope">
 					<div class="media">
@@ -85,8 +84,8 @@
 					</div>
 				</template>
 			</el-table-column>
-			<el-table-column prop="create_time" label="评价时间" align="center" width="155"></el-table-column>
-			<el-table-column prop="create_time" label="是否显示" align="center" width="140">
+			<el-table-column prop="review_time" label="评价时间" align="center" width="155"></el-table-column>
+			<el-table-column label="是否显示" align="center" width="140">
 				<template slot-scope="scope">
 					<el-button plain :type="scope.row.status ? 'success' : 'danger'" size="mini" @click="changeStatus(scope.row)">
 						{{ scope.row.status ? '显示' : '隐藏' }}

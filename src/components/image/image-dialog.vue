@@ -1,6 +1,6 @@
 <template>
 	<el-dialog title="选择图片" :visible.sync="imageModel" width="80%" top="5vh">
-		<el-container style="height: 70vh;position:relative;margin: -30px -20px;">
+		<el-container style="height: 70vh;position:relative;margin: -30px -20px;"  v-loading='asideLoading'>
 			<el-header class="d-flex align-items-center border-bottom">
 				<!-- 相册管理头部 -->
 				<div class="d-flex mr-auto">
@@ -15,7 +15,7 @@
 				
 			</el-header>
 			<el-container>
-				<el-aside v-loading='asideLoading' width="200px" class="border-right bg-white" style="position: absolute;top: 60px;bottom: 60px;left: 0;">
+				<el-aside width="200px" class="border-right bg-white" style="position: absolute;top: 60px;bottom: 60px;left: 0;">
 					<!-- 侧边 -->
 					<ul class="list-group list-group-flush">
 						<!-- 用的是相册列表组件 -->
@@ -158,12 +158,12 @@
 		methods:{
 			// 打开弹出层
 			chooseImage(callback){
+				// 获取相册列表
+				this.__init()
 				// 取消之前选中
 				this.unchoose()
 				this.callback = callback
 				this.imageModel = true
-				// 获取相册列表
-				this.__init()
 			},
 			// 初始化数据
 			__init() {
@@ -171,6 +171,7 @@
 				
 				this.unchoose()
 				this.asideLoading = true
+				this.mainLoading = true
 				this.axios.get('/admin/imageclass/' + this.albumPage, { token: true }).then(res => {
 					let result = res.data.data;
 					this.albums = result.list;
@@ -281,9 +282,15 @@
 			},
 			// 选中图片
 			choose(item) {
-				console.log('item:',item)
 				// 选中
 				if (!item.isCheck) {
+					// 限制选中数量
+					if(this.chooseList.length >= this.max){
+						return this.$message({
+							type: 'warning',
+							message: `最多选择${this.max}张图片`
+						});
+					}
 					// 加入选中
 					this.chooseList.push({ id: item.id, url: item.url });
 					// 计算序号

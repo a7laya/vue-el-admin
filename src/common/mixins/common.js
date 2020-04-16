@@ -88,7 +88,8 @@ export default {
 		
 		// 删除单个
 		deleteItem(scope){
-			this.$confirm('确定删除: ' + scope.row.name, '提示', {
+			let name = scope.row.name || scope.row.username || '该行'
+			this.$confirm('确定删除 ' + name, '提示', {
 				confirmButtonText: '确定',
 				cancelButtonText: '取消',
 				type: 'warning'

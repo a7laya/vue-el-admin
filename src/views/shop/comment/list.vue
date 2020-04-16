@@ -1,64 +1,51 @@
 <template>
 	<div class="bg-white h-100 px-3 py-2" style="margin:-8px -20px 20px -20px; ">
-		<!-- <div>
-			<el-button size="medium" type="danger" @click="deleteAllConfirm">批量删除</el-button>
-		</div> -->
-		<button-search ref="buttonSearch" @search="searchEvent" @openSuperSearch="form.username = $event" placeholder="要搜索的">
-			<!-- 左边插槽 -->
-			<!-- <template #left>
-				<el-button type="danger" size="mini">删除评论</el-button>
-			</template> -->
-
-			<!-- 高级搜索表单插槽 -->
-			<template #form>
-				<el-form ref="form" :model="form" label-width="80px" inline>
-					<el-form-item label="评价用户" class="mb-0"><el-input v-model="form.username" size="mini" placeholder="评价用户"></el-input></el-form-item>
-					<el-form-item label="评价类型" class="mb-0">
-						<el-select v-model="form.type" placeholder="请选择评价类型" size="mini">
-							<el-option label="评价类型一" value="shanghai"></el-option>
-							<el-option label="评价类型二" value="beijing"></el-option>
-						</el-select>
-					</el-form-item>
-					<el-form-item label="发布时间" class="mb-0">
-						<el-date-picker
-							v-model="form.time"
-							type="daterange"
-							range-separator="至"
-							start-placeholder="开始日期"
-							end-placeholder="结束日期"
-							size="mini"
-						></el-date-picker>
-					</el-form-item>
-					<el-form-item class="mb-0">
-						<el-button type="info" size="mini" class="ml-2" @click="searchEvent">搜索</el-button>
-						<el-button type="" size="mini" @click="clearSearch">清空筛选条件</el-button>
-					</el-form-item>
-				</el-form>
-			</template>
-		</button-search>
+		<button-search ref="buttonSearch" 
+		:showSuperSearch = 'false'
+		@search="searchEvent" 
+		placeholder="要搜索的商品标题"></button-search>
 		<!-- 表格 -->
 		<el-table border class="mt-3" :data="tableData" style="width: 100%">
+			<el-table-column type="selection" width="55" align="center"></el-table-column>
+			<!-- 展开评论详情 -->
 			<el-table-column type="expand">
 				<template slot-scope="scope">
 					<div class="media">
-						<img src="../../../assets/demo1.jpeg" class="mr-3 rounded-circle" style="width: 50px;height: 50px;"/>
+						<!-- 用户评论 -->
+						<img :src="scope.row.user.avatar" class="mr-3 rounded-circle" style="width: 50px;height: 50px;"/>
 						<div class="media-body">
 							<h6 class="mt-0 mb-0 d-flex">
-								用户名1<small class="ml-2">2020-12-12 12:12:12</small>
-								<el-button type="danger" class="ml-auto" size="mini">删除</el-button>
+								{{scope.row.user.nickname}}<small class="ml-2">{{scope.row.review_time}}</small>
+								<el-button type="info" class="ml-auto" size="mini"
+								v-if="!textareaEdit"
+								@click='textareaEdit = true'>回复</el-button>
 							</h6>
-							撒旦飞洒地方撒旦饭卡上来看JFK撒酒疯的
-							<div class="media bg-light p-1 mt-2 rounded">
-								<img src="../../../assets/avatar.png" class="mr-3 rounded-circle" style="width: 50px; height: 50px;" />
-								<div class="media-body">
-									<h6 class="mt-0 d-flex">
-										客服1<small class="ml-2">2020-12-12 12:12:12</small>
-										<el-button-group>
-											<el-button type="success" size="mini">修改</el-button>
-											<el-button type="warning" size="mini">删除</el-button>
-										</el-button-group>
-									</h6>
-									撒旦飞洒地方撒旦饭卡上来看JFK撒酒疯的
+							<!-- 评论内容 -->
+							{{scope.row.review.data}}
+							<!-- 评论图片 -->
+							<div class="py-2">
+								<img v-for="(item,index) in scope.row.review.image" :key="index" :src="item"  
+								style="max-height: 100px; max-width: 200px;"/>
+							</div>
+							<!-- 客服回复 -->
+							<div v-if="textareaEdit">
+								<el-input type="textarea" :rows="2" placeholder="请输入回复内容"  
+								v-model="textarea" size="mini" class="mb-2"></el-input>
+								<el-button type="success" @click="review(scope.row)" size="mini">确定</el-button>
+								<el-button type="info"    @click="closeTextarea" size="mini">取消</el-button>
+							</div>
+							
+							<div v-if="scope.row.extra && !textareaEdit">
+								<div class="media bg-light p-1 mt-2 rounded" 
+								v-for="(item,index) in scope.row.extra" :key="index">
+									<div class="media-body p-1">
+										<h6 class="mt-0 d-flex">
+											客服<small class="ml-2"></small>
+											<el-button type="info" class="ml-auto" size="mini"
+											@click='openTextarea(item.data)'>修改</el-button>
+										</h6>
+										{{item.data}}
+									</div>
 								</div>
 							</div>
 						</div>
@@ -85,6 +72,7 @@
 				</template>
 			</el-table-column>
 			<el-table-column prop="review_time" label="评价时间" align="center" width="155"></el-table-column>
+
 			<el-table-column label="是否显示" align="center" width="140">
 				<template slot-scope="scope">
 					<el-button plain :type="scope.row.status ? 'success' : 'danger'" size="mini" @click="changeStatus(scope.row)">
@@ -123,27 +111,15 @@ export default {
 	data() {
 		return {
 			preUrl: 'goods_comment',
+			textarea: '', // 客服回复输入框
+			textareaEdit: false, // 客服回复输入框 是否显示
 			form: {
-				username: '',
+				title: '',
 				code: '',
 				type: '',
 				time: ''
 			},
-			tableData: [],
-			// tableData: [
-			// 	{	
-			// 		id: 1,
-			// 		name: '颜色1',
-			// 		goods: {
-			// 			title: "扫描仪",
-			// 			cover: "http://127.0.0.1:8080/img/demo1.4419d7d7.jpeg"
-			// 		},
-			// 		username: "a7laya",
-			// 		star: 5,
-			// 		create_time: '2020-12-12 12:12:12',
-			// 		status: 1,
-			// 	}
-			// ],
+			tableData: []
 		};
 	},
 	methods: {
@@ -152,62 +128,56 @@ export default {
 			console.log("e:",e)
 			this.tableData = e.list
 		},
-		// 清空筛选条件
-		clearSearch() {
-			this.form = {
-				username: '',
-				code: '',
-				type: '',
-				time: ''
-			};
-			this.$refs.buttonSearch.keyword = '';
-			// 通过$refs可以访问子组件的data | methods里面的内容
-			this.$refs.buttonSearch.closeSuperSearch();
+		getListUrl(){
+			return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&title=${this.form.title}`
 		},
 		// 搜索事件
 		searchEvent(e = false) {
 			// 简单搜索
 			if (typeof e === 'string') {
-				return console.log('简单搜索:', e);
+				console.log('简单搜索:', e);
+				this.form.title = e
+				console.log('this.getListUrl():',this.getListUrl())
+				return this.getList()
 			}
 			// 高级搜索
 			console.log('高级搜索');
 		},
-		// 表格多选
-		handleSelectionChange(val) {
-			this.multipleSelection = val;
-			console.log('this.multipleSelection:', this.multipleSelection);
+		// 客服回复
+		review(item){
+			if(this.textarea.trim() === '') return this.$message({
+				type: 'error',
+				message: '回复内容不能为空'
+			})
+			let url = `/admin/goods_comment/review/${item.id}`
+			let obj = {
+				id: item.order_id,
+				data: this.textarea
+			}
+			this.layout.showLoading()
+			this.axios.post(url,obj,{token:true})
+				.then(res => {
+					if(!res.data.data) return
+					if(item.extra && item.extra[0]) {
+						item.extra[0].data = this.textarea 
+					} else { // 判断不是修改回复
+						this.getList()
+					}
+					this.closeTextarea()
+					this.layout.hideLoading()
+				}).catch(err => {
+					this.layout.hideLoading()
+				})
 		},
-		// 批量删除
-		deleteAll() {
-			this.multipleSelection.forEach(item => {
-				let index = this.tableData.findIndex(v => v.id === item.id);
-				if (index !== -1) {
-					this.tableData.splice(index, 1);
-				}
-			});
-			this.multipleSelection = [];
+		// 取消回复
+		closeTextarea(){
+			this.textareaEdit = false
+			this.textarea = ''
 		},
-		// 批量删除确认
-		deleteAllConfirm() {
-			this.$confirm('是否删除选中规格?', '提示', {
-				confirmButtonText: '删除',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}).then(() => {
-				this.deleteAll();
-				this.$message({
-					type: 'success',
-					message: '删除成功!'
-				});
-			});
-		},
-		// 分页动作
-		handleSizeChange(val) {
-			console.log(`每页 ${val} 条`);
-		},
-		handleCurrentChange(val) {
-			console.log(`当前页: ${val}`);
+		// 点击修改回复按钮
+		openTextarea(data){
+			this.textarea = data
+			this.textareaEdit = true
 		}
 	}
 };

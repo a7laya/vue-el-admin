@@ -182,7 +182,7 @@ export default {
 		__init() {
 			// 获取相册列表
 			this.layout.showLoading()
-			this.chooseList = []
+			this.unchoose()
 			this.axios.get('/admin/imageclass/' + this.albumPage, { token: true }).then(res => {
 				let result = res.data.data;
 				this.albums = result.list;
@@ -207,7 +207,7 @@ export default {
 						id: item.id,
 						url: item.url,
 						name: item.name,
-						ischeck: false,
+						isCheck: false,
 						checkOrder: 0
 					};
 				});

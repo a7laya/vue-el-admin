@@ -26,7 +26,9 @@
 			<el-table-column prop="level" label="等级序号" align="center" width="122"></el-table-column>
 			<el-table-column label="状态" align="center" width="120">
 				<template slot-scope="scope">
-					<el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0"></el-switch>
+					<el-button plain :type="scope.row.status ? 'success' : 'danger'" size="mini" @click="changeStatus(scope.row)">
+						{{ scope.row.status ? '启用' : '禁用' }}
+					</el-button>
 				</template>
 			</el-table-column>
 			<el-table-column label="操作" align="center" width="188">
@@ -43,11 +45,11 @@
 				<el-pagination
 					@size-change="handleSizeChange"
 					@current-change="handleCurrentChange"
-					:current-page="currentPage"
-					:page-sizes="[100, 200, 300, 400]"
-					:page-size="100"
+					:current-page="page.current"
+					:page-sizes="page.sizes"
+					:page-size="page.size"
 					layout="total, sizes, prev, pager, next, jumper"
-					:total="400"
+					:total="page.total"
 				></el-pagination>
 			</div>
 		</el-footer>
@@ -58,7 +60,7 @@
 			<el-form ref="form" :rules="rules" :model="form" label-width="80px">
 				<el-form-item label="等级名称" prop="name">
 					<el-input v-model="form.name" placeholder="等级名称" size="mini" class="w-50"></el-input>
-					<small class="text-secondary d-block">设置会员等级名称</small>
+					<small class="text-secondary d-block">设置会员等级名称, 纯汉字</small>
 				</el-form-item>
 				<el-form-item label="等级权重" prop="level">
 					<el-input-number v-model="form.level" placeholder="等级权重" size="mini" class="w-25"></el-input-number>
@@ -68,24 +70,29 @@
 				<el-form-item label="升级条件">
 					<div class="d-flex align-items-center">
 						<small>累计消费满</small>
-						<el-input type="number" placeholder="大于等于0" v-model="form.consume" size="mini" class="w-50 mx-2">
-							<template slot="append">元</template>
+						<el-input type="number" placeholder="大于等于0" v-model="form.max_price" size="mini" class="w-50 mx-2">
+							<template slot="append">
+								元
+							</template>
 						</el-input>
 					</div>
 					<div class="d-flex align-items-center">
 						<small>累计次数满</small>
-						<el-input type="number" placeholder="大于等于0" v-model="form.times" size="mini" class="w-50 mx-2">
-							<template slot="append">次</template>
+						<el-input type="number" placeholder="大于等于0" v-model="form.max_times" size="mini" class="w-50 mx-2">
+							<template slot="append">
+								次
+							</template>
 						</el-input>
 					</div>
 				</el-form-item>
 				<el-form-item label="折扣率">
 					<el-input type="number" v-model="form.discount" placeholder="折扣率" size="mini" class="w-50">
-						<template slot="append">%</template>
+						<template slot="append">
+							%
+						</template>
 					</el-input>
 					<small class="text-secondary d-block">输入90表示打九折</small>
 				</el-form-item>
-				
 			</el-form>
 			<div slot="footer" class="dialog-footer">
 				<el-button @click="createModel = false">取 消</el-button>
@@ -97,51 +104,56 @@
 
 <script>
 import buttonSearch from '@/components/common/button-search.vue';
+import common from '@/common/mixins/common.js';
 export default {
-	inject: ['app'],
+	inject: ['app', 'layout'],
+	mixins: [common],
 	components: {
 		buttonSearch
 	},
 	data() {
+		var checkName = (rule, value, callback) => {
+			let test = /^[\u4e00-\u9fa5]+$/.test(value)
+			if (!test) {
+				return callback(new Error('会员名称必须为全汉字'));
+			}
+			callback()
+		}
 		return {
+			preUrl: 'user_level',
 			editIndex: -1,
 			createModel: false,
 			form: {
 				name: '',
-				consume: 0, // 累计消费
-				times: 0, // 累计次数
+				max_price: 0, // 累计消费
+				max_times: 0, // 累计次数
 				discount: 0, // 折扣
 				level: 0,
-				status: 1,
+				status: 1
 			},
 			level: 0,
-			tableData: [
-				{
-					name: '普通会员',
-					consume: 100, // 累计消费
-					times: 10, // 累计次数
-					discount: 10, // 折扣
-					level: 111,
-					status: 1,
-					create_time: '2020-12-12 12:12:12'
-				}
-			],
-			currentPage: 1,
+			tableData: [],
 			// 表单验证
 			rules: {
-				username: [{ required: true, message: '用户名不能为空', trigger: 'blur' }],
-				password: [{ required: true, message: '密码不能为空', trigger: 'blur' }],
-				nickname: [{ required: true, message: '昵称不能为空', trigger: 'blur' }]
+				name: [
+					{ required: true, message: '等级名称不能为空', trigger: 'blur' }, 
+					{ validator: checkName, trigger: 'blur' },
+				]
 			}
 		};
 	},
 	computed: {
 		getLevel() {
-			let arr = [{ name: '累计消费', value: 'consume' }, { name: '累计次数', value: 'times' }];
+			let arr = [{ name: '累计消费', value: 'max_price' }, { name: '累计次数', value: 'max_times' }];
 			return arr[this.level];
 		}
 	},
 	methods: {
+		// 获取数据
+		getListResult(e) {
+			console.log('e:', e);
+			this.tableData = e.list;
+		},
 		// 打开模态框
 		openModel(e = false) {
 			// 增加
@@ -149,11 +161,11 @@ export default {
 				// 初始化表单
 				this.form = {
 					name: '',
-					consume: 0, // 累计消费
-					times: 0, // 累计次数
+					max_price: 0, // 累计消费
+					max_times: 0, // 累计次数
 					discount: 0, // 折扣
 					level: 0,
-					status: 1,
+					status: 1
 				};
 				this.editIndex = -1;
 			} else {
@@ -164,46 +176,14 @@ export default {
 			// 打开dialog
 			this.createModel = true;
 		},
-		// 改变等级状态
-		changeStatus(item) {
-			item.status = item.status === 1 ? 0 : 1;
-			this.$message({
-				type: 'success',
-				message: item.status === 1 ? `已启用: ${item.name}` : `已禁用: ${item.name}`
-			});
-		},
-
-		deleteItem(scope) {
-			this.$confirm('确定删除: ' + scope.row.name, '提示', {
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}).then(() => {
-				this.tableData.splice(scope.$index, 1);
-				this.$message({
-					message: '删除成功',
-					type: 'success'
-				});
-			});
-		},
 		// 提交模态框
 		submit() {
 			// 验证成功后才提交
-			this.$refs.form.validate(res => {
-				let msg = '添加';
-				if (!res) return;
-				if (this.editIndex === -1) {
-					this.tableData.unshift(this.form);
-				} else {
-					this.tableData.splice(this.editIndex, 1, this.form);
-					msg = '修改';
-				}
-				// 关闭模态框 并提示成功
+			this.$refs.form.validate((res) => {
+				console.log("res:",res)
+				if (!res) return
+				this.addOrEdit(this.form, this.form.id);
 				this.createModel = false;
-				this.$message({
-					message: msg + '成功',
-					type: 'success'
-				});
 			});
 		},
 

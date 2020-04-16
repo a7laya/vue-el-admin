@@ -5,16 +5,16 @@
 			<!-- 左边 -->
 			<slot name="left"></slot>
 			<!-- 右边 -->
-			<div class="ml-auto animated faster" :class="superSearch ? 'fadeOutRight' : 'fadeInRight'" v-if='showSeach'>
+			<div class="ml-auto animated faster" :class="superSearch ? 'fadeOutRight' : 'fadeInRight'" v-if='showSearch'>
 				<slot name="right">
 					<el-input v-model="keyword" size="mini" :placeholder="placeholder" :style="'width: '+width+'px;'"></el-input>
 					<el-button type="info" size="mini" class="ml-2" @click="$emit('search', keyword)">搜索</el-button>
-					<el-button type="" size="mini" @click='openSuperSearch'>高级搜索</el-button>
+					<el-button v-if="showSuperSearch" size="mini" @click='openSuperSearch'>高级搜索</el-button>
 				</slot>
 			</div>
 		</div>
 		<!-- 高级搜索弹框 -->
-		<div class="animated fadeInRight faster" v-show="superSearch">
+		<div class="animated fadeInRight faster" v-show="superSearch && showSuperSearch">
 			<el-card class="box-card bg-light mt-2">
 				<div slot="header" class="clearfix" style="margin: -10px 0;">
 					<span class="small">高级搜索</span>
@@ -39,7 +39,11 @@
 				type: String,
 				default: ''
 			},
-			showSeach: {
+			showSearch: {
+				type: Boolean,
+				default: true
+			},
+			showSuperSearch: {
 				type: Boolean,
 				default: true
 			}

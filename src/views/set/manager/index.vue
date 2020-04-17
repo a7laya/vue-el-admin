@@ -1,6 +1,6 @@
 <template>
 	<div class="">
-		<el-tabs v-model="preUrl">
+		<el-tabs v-model="preUrl" @tab-click="getList">
 			<!-- 管理员列表 -->
 			<el-tab-pane label="管理员列表" name="manager">
 				<div class="d-flex align-items-center">
@@ -10,13 +10,13 @@
 				</div>
 				<!-- 表格 -->
 				<el-table border class="mt-3" :data="managerList" style="width: 100%">
-					<el-table-column label="管理员头像" align="center">
+					<el-table-column label="管理员头像" align="center" width="122">
 						<template slot-scope="scope">
 							<el-avatar :src="scope.row.avatar"></el-avatar>
 						</template>
 					</el-table-column>
-					<el-table-column prop="username" label="管理员名称" align="center" width="122"></el-table-column>
-					<el-table-column prop="create_time" label="创建时间" align="center" width="122"></el-table-column>
+					<el-table-column prop="username" label="管理员名称" align="center" min-width="144"></el-table-column>
+					<el-table-column prop="create_time" label="创建时间" align="center" width="188"></el-table-column>
 					<el-table-column label="所属管理员" align="center" width="122">
 						<template slot-scope="scope">
 							{{ scope.row.role.name }}
@@ -31,7 +31,7 @@
 					</el-table-column>
 					<el-table-column label="操作" align="center" width="188">
 						<template slot-scope="scope">
-							<el-button plain type="text" size="mini" @click="openDialog(scope)">修改</el-button>
+							<el-button plain type="text" size="mini" @click="openDialog('manager',scope.row)">修改</el-button>
 							<el-button plain type="text" size="mini" @click="deleteItem(scope, managerList)">删除</el-button>
 						</template>
 					</el-table-column>
@@ -40,15 +40,21 @@
 
 			<!-- 角色列表 -->
 			<el-tab-pane label="角色列表" name="role">
-				<div class="d-flex align-items-center"><el-button type="primary" @click="openDialog(false)" size="small" v-auth="'角色管理'">添加角色</el-button></div>
+				<div class="d-flex align-items-center">
+					<el-button type="primary" @click="openDialog(false)" size="small" v-auth="'角色管理'">添加角色</el-button>
+				</div>
 				<!-- 表格 -->
-				<el-table border class="mt-3" :data="groupList" style="width: 100%">
-					<el-table-column prop="name" label="角色名称" align="center"></el-table-column>
+				<el-table border class="mt-3" :data="roleList" style="width: 100%">
+					<el-table-column prop="name" label="角色名称" align="center" min-width="144"></el-table-column>
+					<el-table-column prop="create_time" label="创建时间" align="center" min-width="144"></el-table-column>
 					<el-table-column label="状态" align="center" width="120">
 						<template slot-scope="scope">
-							<el-switch v-model="scope.row.status" :active-value="1" :inactive-value="0"></el-switch>
+								<el-button plain :type="scope.row.status ? 'success' : 'danger'" size="mini" @click="changeStatus(scope.row)">
+									{{ scope.row.status ? '启用' : '禁用' }}
+								</el-button>
 						</template>
 					</el-table-column>
+					<el-table-column prop="desc" label="描述" align="center" min-width="200"></el-table-column>
 					<el-table-column label="操作" align="center" width="222">
 						<template slot-scope="scope">
 							<el-button plain type="text" size="mini" @click="openDialog(scope)">修改</el-button>
@@ -61,7 +67,8 @@
 
 			<!-- 权限列表 -->
 			<el-tab-pane label="权限列表" name="rule">
-				<el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" default-expand-all :expand-on-click-node="false" draggable @node-drop="nodeDrop">
+				<el-tree :data="data" :props="defaultProps" @node-click="handleNodeClick" default-expand-all :expand-on-click-node="false"
+				 draggable @node-drop="nodeDrop">
 					<span class="custom-tree-node" slot-scope="{ node, data }">
 						<div class="">
 							<el-input v-if="data.editStatus" v-model="data.label" size="mini"></el-input>
@@ -78,24 +85,18 @@
 			</el-tab-pane>
 		</el-tabs>
 		<div style="height: 120px;"></div>
-		<el-footer v-if="preUrl != 'rule'" class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
+		<el-footer v-if="preUrl != 'rule'" class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom"
+		 style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination
-					@size-change="handleSizeChange"
-					@current-change="handleCurrentChange"
-					:current-page="page.current"
-					:page-sizes="page.sizes"
-					:page-size="page.size"
-					layout="total, sizes, prev, pager, next, jumper"
-					:total="page.total"
-				></el-pagination>
+				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page.current"
+				 :page-sizes="page.sizes" :page-size="page.size" layout="total, sizes, prev, pager, next, jumper" :total="page.total"></el-pagination>
 			</div>
 		</el-footer>
 		<!--===== 新增 | 修改模态框 =====-->
 		<el-dialog title="添加会员" :visible.sync="dialogVisible" top="5vh" :before-close="handleClose">
 			<!-- 表单内容 -->
-			<el-form ref="form" :rules="rules" :model="form.manager" label-width="80px">
+			<el-form ref="manager" :rules="rules" :model="form.manager" label-width="80px">
 				<el-form-item label="用户名" prop="username">
 					<el-input v-model="form.manager.username" placeholder="用户名" size="mini" class="w-50"></el-input>
 				</el-form-item>
@@ -104,17 +105,14 @@
 				</el-form-item>
 				<el-form-item label="头像">
 					<div>
-						<span v-if='!form.manager.avatar' class="btn btn-light p-3" style="line-height: 1;"
-						@click="chooseImage">
+						<span v-if='!form.manager.avatar' class="btn btn-light p-3" style="line-height: 1;" @click="chooseImage">
 							<i class="el-icon-plus"></i>
 						</span>
-						<img v-else :src="form.manager.avatar" class="rounded" 
-						style="width: 45px; height: 45px; cursor: pointer;"
-						@click="chooseImage"/>
+						<img v-else :src="form.manager.avatar" class="rounded" style="width: 45px; height: 45px; cursor: pointer;" @click="chooseImage" />
 					</div>
 				</el-form-item>
-				<el-form-item label="关联角色">
-					<el-select v-model="form.manager.role" placeholder="请选择角色" size="mini">
+				<el-form-item label="关联角色" prop="role">
+					<el-select v-model="form.manager.role_id" placeholder="请选择角色" size="mini">
 						<el-option v-for="(item,index) in roleOptions" :key="index" :label="item.name" :value="item.id"></el-option>
 					</el-select>
 				</el-form-item>
@@ -134,163 +132,198 @@
 </template>
 
 <script>
-import common from '@/common/mixins/common.js';
-export default {
-	inject: ['app', 'layout'],
-	mixins: [common],
-	data() {
-		return {
-			preUrl: 'manager',
-			keyword: '',
-			editIndex: -1,
-			form: {
-				manager: {
-					username: '',
-					password: '',
-					avatar: '',
-					role_id: '',
-					status: 1
-				}
-			},
-			managerList: [], // 管理员列表表格数据
-			groupList: [
-				{
-					id: 1,
-					name: '超级管理员',
-					status: 1
-				}
-			],
-			data: [
-				{
+	import common from '@/common/mixins/common.js';
+	export default {
+		inject: ['app', 'layout'],
+		mixins: [common],
+		data() {
+			return {
+				preUrl: 'manager',
+				keyword: '',
+				editIndex: -1,
+				form: {
+					manager: {
+						username: '',
+						password: '',
+						avatar: '',
+						role_id: '',
+						status: 1
+					}
+				},
+				managerList: [], // 管理员列表表格数据
+				roleList: [],   // 角色列表数据
+				data: [{
 					id: 1,
 					label: '一级 1',
 					status: 1,
 					editStatus: false,
-					children: [
-						{
-							id: 2,
-							label: '二级 1-1',
+					children: [{
+						id: 2,
+						label: '二级 1-1',
+						status: 1,
+						editStatus: false,
+						children: [{
+							id: 3,
+							label: '三级 1-1-1',
 							status: 1,
 							editStatus: false,
-							children: [
-								{
-									id: 3,
-									label: '三级 1-1-1',
-									status: 1,
-									editStatus: false,
-									children: []
-								}
-							]
-						}
-					]
-				}
-			],
-			defaultProps: {
-				children: 'children',
-				label: 'label',
-				status: 1,
-				editStatus: false
-			},
-			rules: {
-				name: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-				level: [{ required: true, message: '请输入密码', trigger: 'blur' }]
-			},
-			
-			dialogVisible: false,
-			dialogType: "manager",
-			
-			roleOptions: [],
-		};
-	},
-	methods: {
-		// mixins-common获取数据
-		getListResult(e) {
-			console.log('e:', e);
-			this.roleOptions = e.role
-			this.managerList = e.list
-		},
-		// mixins-common获取请求列表分页的url
-		getListUrl() {
-			if (this.preUrl === 'manager') return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.keyword}`;
-			return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}`;
-		},
-		// 点击了相应节点
-		handleNodeClick(data) {
-			console.log(data);
-		},
-		// 显示或隐藏节点
-		showOrHide(data) {
-			data.status = data.status ? 0 : 1;
-		},
-		// 编辑节点标签
-		edit(data) {
-			data.editStatus = !data.editStatus;
-		},
-		// 删除节点
-		remove(node, data) {
-			// 拿到父节点
-			let parent = node.parent;
-			// 拿到父节点下所有子节点数组
-			let children = parent.data.children || parent.data;
-			// 拿到本节点所处的index
-			let index = children.findIndex(v => v.id === data.id);
-			// 删除本节点
-			children.splice(index, 1);
-		},
-		// 删除节点确认
-		removeConfirm(node, data) {
-			this.$confirm('是否删除节点: ' + node.label, '提示', {
-				confirmButtonText: '确定',
-				cancelButtonText: '取消',
-				type: 'warning'
-			}).then(() => {
-				this.remove(node, data);
-			});
-		},
-		// 增加子节点
-		append(data) {
-			let newObj = {
-				id: 2,
-				label: '二级 1-1',
-				status: 1,
-				editStatus: true,
-				children: []
+							children: []
+						}]
+					}]
+				}],
+				defaultProps: {
+					children: 'children',
+					label: 'label',
+					status: 1,
+					editStatus: false
+				},
+				rules: {
+					username: [{
+						required: true,
+						message: '请输入用户名',
+						trigger: 'blur'
+					}],
+					password: [{
+						required: true,
+						message: '请输入密码',
+						trigger: 'blur'
+					}],
+					role: [{
+						required: true,
+						message: '请选择角色',
+						trigger: 'blur'
+					}]
+				},
+
+				dialogVisible: false,
+				dialogType: "manager",
+
+				roleOptions: [],
 			};
-			data.children.push(newObj);
 		},
-		// 节点拖拽结束后
-		nodeDrop() {
-			console.log('arguments0:', arguments[0]);
-			console.log('arguments1:', arguments[1]);
-		},
-		
-		// ========== 模态框相关操作 ==========
-		submit() {
-			console.log('保存1');
-		},
-		// 打开模态框
-		openDialog(type) {
-			this.dialogType = type
-			this.dialogVisible = true
-		},
-		
-		// 模态框关闭前
-		handleClose(done) {
-			this.$confirm('确认关闭？')
-				.then(_ => {
-					done();
+		methods: {
+			// mixins-common获取数据
+			getListResult(e) {
+				console.log('e:', e);
+				switch (this.preUrl){
+					case 'manager':
+						this.roleOptions = e.role
+						this.managerList = e.list
+						break;
+					case 'role':
+						this.roleList = e.list
+						break;
+					default:
+						break;
+				}
+			},
+			// mixins-common获取请求列表分页的url
+			getListUrl() {
+				if (this.preUrl === 'manager') return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.keyword}`;
+				return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}`;
+			},
+			// 点击了相应节点
+			handleNodeClick(data) {
+				console.log(data);
+			},
+			// 显示或隐藏节点
+			showOrHide(data) {
+				data.status = data.status ? 0 : 1;
+			},
+			// 编辑节点标签
+			edit(data) {
+				data.editStatus = !data.editStatus;
+			},
+			// 删除节点
+			remove(node, data) {
+				// 拿到父节点
+				let parent = node.parent;
+				// 拿到父节点下所有子节点数组
+				let children = parent.data.children || parent.data;
+				// 拿到本节点所处的index
+				let index = children.findIndex(v => v.id === data.id);
+				// 删除本节点
+				children.splice(index, 1);
+			},
+			// 删除节点确认
+			removeConfirm(node, data) {
+				this.$confirm('是否删除节点: ' + node.label, '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+					this.remove(node, data);
+				});
+			},
+			// 增加子节点
+			append(data) {
+				let newObj = {
+					id: 2,
+					label: '二级 1-1',
+					status: 1,
+					editStatus: true,
+					children: []
+				};
+				data.children.push(newObj);
+			},
+			// 节点拖拽结束后
+			nodeDrop() {
+				console.log('arguments0:', arguments[0]);
+				console.log('arguments1:', arguments[1]);
+			},
+
+			// ========== 模态框相关操作 ==========
+			// 打开模态框
+			openDialog(type, item = false) {
+				// 传入类型 ‘manager’ - ‘role’ - ‘rule’
+				this.dialogType = type
+				// 组织表单
+				switch (type) {
+					case 'manager':
+						if (!item) {
+							this.form.manager = {
+								username: '',
+								password: '',
+								avatar: '',
+								role_id: '',
+								status: 1
+							}
+						} else {
+							this.form.manager = { ...item
+							}
+						}
+						break;
+					default:
+						break;
+				}
+				// 显示模态框
+				this.dialogVisible = true
+			},
+			submit() {
+				this.$refs[this.preUrl].validate(res => {
+					let item = this.form[this.preUrl]
+					this.addOrEdit(item, item.id)
+					this.dialogVisible = false
 				})
-				.catch(_ => {});
-		},
-		
-		// 选择头像
-		chooseImage(){
-			this.app.chooseImage(res=>{
-				this.form.manager.avatar = res[0].url
-			}, 1)
-		},
-	}
-};
+			},
+
+			// 模态框关闭前
+			handleClose(done) {
+				this.$confirm('确认关闭？')
+					.then(_ => {
+						done();
+					})
+					.catch(_ => {});
+			},
+
+			// 选择头像
+			chooseImage() {
+				this.app.chooseImage(res => {
+					this.form.manager.avatar = res[0].url
+				}, 1)
+			},
+		}
+	};
 </script>
 
 <style></style>

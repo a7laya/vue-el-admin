@@ -214,14 +214,6 @@ export default {
 			if (this.preUrl === 'manager') return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.keyword}`;
 			return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}`;
 		},
-		submit() {
-			console.log('保存');
-		},
-		// 打开模态框
-		openDialog(type) {
-			this.dialogType = type
-			this.dialogVisible = true
-		},
 		// 点击了相应节点
 		handleNodeClick(data) {
 			console.log(data);
@@ -271,7 +263,17 @@ export default {
 			console.log('arguments0:', arguments[0]);
 			console.log('arguments1:', arguments[1]);
 		},
-
+		
+		// ========== 模态框相关操作 ==========
+		submit() {
+			console.log('保存');
+		},
+		// 打开模态框
+		openDialog(type) {
+			this.dialogType = type
+			this.dialogVisible = true
+		},
+		
 		// 模态框关闭前
 		handleClose(done) {
 			this.$confirm('确认关闭？')

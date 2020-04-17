@@ -266,7 +266,7 @@ export default {
 		
 		// ========== 模态框相关操作 ==========
 		submit() {
-			console.log('保存');
+			console.log('保存1');
 		},
 		// 打开模态框
 		openDialog(type) {

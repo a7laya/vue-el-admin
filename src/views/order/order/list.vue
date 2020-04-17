@@ -114,7 +114,16 @@
 			</el-table-column>
 			<el-table-column label="操作" align="center" width="140">
 				<template slot-scope="scope">
-					<el-button plain type="primary" size="mini">订单详情</el-button>
+					<div>
+						<el-button type="text" size="mini">订单详情</el-button>
+					</div>
+					<div>
+						<el-button type="text" size="mini" @click="ship(scope.row)"
+						v-if="scope.row.ship_status === 'pending' && scope.row.closed === 0 && scope.row.payment_method && scope.row.refund_status === 'pending'">
+						<!-- 发货状态：未发货 && 未关闭 && 已付款 && 用户没有申请退款 才显示 -->
+							订单发货
+						</el-button>
+					</div>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -133,6 +142,25 @@
 				</el-pagination>
 			</div>
 		</el-footer>
+		
+		<!-- 发货模态框 -->
+		<el-dialog title="订单发货" :visible.sync="shipModel">
+			<el-form ref="shipForm" :model="shipForm" label-width="80px">
+				<el-form-item label="快递公司" prop="express_company">
+					<el-select v-model="shipForm.express_company" placeholder="请选择快递公司">
+						<el-option label="区域一" value="shanghai"></el-option>
+						<el-option label="区域二" value="beijing"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="快递单号">
+					<el-input v-model="shipForm.express_no" placeholder="请输入单号"></el-input>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="shipModel = false">取 消</el-button>
+				<el-button type="primary" @click="shipSubmit">确 定</el-button>
+			</div>
+		</el-dialog>
 	</div>
 </template>
 
@@ -165,7 +193,14 @@ export default {
 				no: '',
 				phone: ''
 			},
-			tableData: []
+			tableData: [],
+			shipModel: false,
+			shipForm: {
+				id: '',
+				express_company: '',
+				express_no: ''
+			},
+			express_company_options: []
 		};
 	},
 	computed: {
@@ -187,6 +222,16 @@ export default {
 			}
 			return str
 		}
+	},
+	created() {
+		let url = `/admin/express_company/1?limit=50`
+		this.layout.showLoading()
+		this.axios.get(url,{token: true}).then(res=>{
+			console.log('res:',res)
+			this.layout.hideLoading()
+		}).catch(err => {
+			this.layout.hideLoading()
+		})
 	},
 	methods: {
 		// 请求后端数据的方法
@@ -229,6 +274,23 @@ export default {
 			console.log("this.params:",this.params)
 			return this.getList()
 		},
+		// 订单发货
+		ship(item) {
+			this.shipModel = true
+			this.shipForm.id = item.id
+		},
+		// 确认发货
+		shipSubmit(){
+			let url = `/admin/order/${this.shipForm.id}/ship`
+			let obj = {...this.shipForm}
+			this.layout.showLoading()
+			this.axios.post(url,obj,{token: true}).then(res=>{
+				console.log('res:',res)
+				this.layout.hideLoading()
+			}).catch(err => {
+				this.layout.hideLoading()
+			})
+		}
 		
 	}
 };

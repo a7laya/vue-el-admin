@@ -86,8 +86,12 @@ export default {
 			})
 		},
 		
-		// 删除单个
-		deleteItem(scope){
+		/* 
+		 * ===== 删除单个 =====
+		 * 为了提高用户体验，传入一个list，直接不用刷新页面在页面上删除该行
+		 */
+		deleteItem(scope, list = false){
+			console.log("scope:",scope)
 			let name = scope.row.name || scope.row.username || '该行'
 			this.$confirm('确定删除 ' + name, '提示', {
 				confirmButtonText: '确定',
@@ -98,7 +102,13 @@ export default {
 				let obj = {}
 				this.showLoading()
 				this.axios.post(url,obj,{token: true}).then(res=>{
-					this.tableData.splice(scope.$index,1)
+					if(list) {
+						list.splice(scope.$index,1)
+					} else if (this.tableData) {
+						this.tableData.splice(scope.$index,1)
+					} else {
+						this.getList()
+					}
 					this.$message({
 						message: '删除成功',
 						type: 'success'

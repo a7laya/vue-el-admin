@@ -5,7 +5,9 @@
  -->
 <template>
 	<div class="bg-white h-100 px-3 py-2" style="margin:-8px -20px 20px -20px; ">
-		<el-tabs v-model="tabIndex" @tab-click="handleClick"><el-tab-pane v-for="(item, index) in tabbars" :key="index" :label="item.name" class="bg-white"></el-tab-pane></el-tabs>
+		<el-tabs v-model="tabIndex" @tab-click="handleClick">
+			<el-tab-pane v-for="(item, index) in tabbars" :key="index" :label="item.name" class="bg-white"></el-tab-pane>
+		</el-tabs>
 
 		<button-search ref="buttonSearch" @search="searchEvent" @openSuperSearch="form.no = $event" placeholder="要搜索的订单编号">
 			<!-- 左边插槽 -->
@@ -17,20 +19,19 @@
 			<!-- 高级搜索表单插槽 -->
 			<template #form>
 				<el-form ref="form" :model="form" label-width="80px" inline>
-					<el-form-item label="订单编号" class="mb-0"><el-input v-model="form.no" size="mini" placeholder="订单编号"></el-input></el-form-item>
-					<el-form-item label="下单时间" class="mb-0">
-						<el-date-picker
-							v-model="form.time"
-							type="daterange"
-							range-separator="至"
-							start-placeholder="开始日期"
-							end-placeholder="结束日期"
-							size="mini"
-							value-format="yyyy-MM-dd"
-						></el-date-picker>
+					<el-form-item label="订单编号" class="mb-0">
+						<el-input v-model="form.no" size="mini" placeholder="订单编号"></el-input>
 					</el-form-item>
-					<el-form-item label="收货人" class="mb-0"><el-input v-model="form.name" size="mini" placeholder="收货人"></el-input></el-form-item>
-					<el-form-item label="手机号" class="mb-0"><el-input v-model="form.phone" size="mini" placeholder="手机号"></el-input></el-form-item>
+					<el-form-item label="下单时间" class="mb-0">
+						<el-date-picker v-model="form.time" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+						 size="mini" value-format="yyyy-MM-dd"></el-date-picker>
+					</el-form-item>
+					<el-form-item label="收货人" class="mb-0">
+						<el-input v-model="form.name" size="mini" placeholder="收货人"></el-input>
+					</el-form-item>
+					<el-form-item label="手机号" class="mb-0">
+						<el-input v-model="form.phone" size="mini" placeholder="手机号"></el-input>
+					</el-form-item>
 					<el-form-item class="mb-0">
 						<el-button type="info" size="mini" class="ml-2" @click="searchEvent">搜索</el-button>
 						<el-button type="" size="mini" @click="clearSearch">清空筛选条件</el-button>
@@ -131,29 +132,21 @@
 		<el-footer class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination
-				@size-change="handleSizeChange" 
-				@current-change="handleCurrentChange" 
-				:current-page="page.current"
-				:page-sizes="page.sizes" 
-				:page-size="page.size" 
-				layout="total, sizes, prev, pager, next, jumper" 
-				:total="page.total">
+				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page.current"
+				 :page-sizes="page.sizes" :page-size="page.size" layout="total, sizes, prev, pager, next, jumper" :total="page.total">
 				</el-pagination>
 			</div>
 		</el-footer>
-		
-		<!-- 发货模态框 -->
-		<el-dialog title="订单发货" :visible.sync="shipModel">
-			<el-form ref="shipForm" :model="shipForm" label-width="80px">
+		<el-dialog title="标题" :visible.sync="shipModel">
+			<el-form ref="shipForm" :rules="shipFormRules" :model="shipForm" label-width="80px">
 				<el-form-item label="快递公司" prop="express_company">
 					<el-select v-model="shipForm.express_company" placeholder="请选择快递公司">
-						<el-option label="区域一" value="shanghai"></el-option>
-						<el-option label="区域二" value="beijing"></el-option>
+						<el-option v-for="(item,index) in express_company_options" :key="index" :label="item.name" :value="item.code"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="快递单号">
-					<el-input v-model="shipForm.express_no" placeholder="请输入单号"></el-input>
+				<el-form-item label="快递单号" prop="express_no">
+					<el-input v-model="shipForm.express_no"></el-input>
+
 				</el-form-item>
 			</el-form>
 			<div slot="footer" class="dialog-footer">
@@ -165,135 +158,181 @@
 </template>
 
 <script>
-import buttonSearch from '@/components/common/button-search.vue';
-import common from '@/common/mixins/common.js';
-export default {
-	inject: ['layout'],
-	mixins: [common],
-	components: {
-		buttonSearch
-	},
-	data() {
-		return {
-			preUrl: 'order',
-			tabIndex: 0,
-			tabbars: [
-				{ name: '全部',   key: 'all' },
-				{ name: '待付款', key: 'nopay' },
-				{ name: '待发货', key: 'noship' },
-				{ name: '待收货', key: 'shiped' },
-				{ name: '已收货', key: 'received' },
-				{ name: '已完成', key: 'finish' },
-				{ name: '已关闭', key: 'closed' },
-				{ name: '退款中', key: 'refunding' },
-			],
-			form: {
-				time: '',
-				name: '',
-				no: '',
-				phone: ''
-			},
-			tableData: [],
-			shipModel: false,
-			shipForm: {
-				id: '',
-				express_company: '',
-				express_no: ''
-			},
-			express_company_options: []
-		};
-	},
-	computed: {
-		tab(){
-			return this.tabbars[this.tabIndex].key
+
+	import buttonSearch from '@/components/common/button-search.vue';
+	import common from '@/common/mixins/common.js';
+	export default {
+		inject: ['layout'],
+		mixins: [common],
+		components: {
+			buttonSearch
 		},
-		// 拼接参数
-		params(){
-			let str = ''
-			for(let key in this.form) {
-				let v = this.form[key]
-				if(v){
-					if(Array.isArray(v)) {
-						str += `&starttime=${v[0]}&endtime=${v[1]}`
-					} else {
-						str += `&${key}=${v}`
+		data() {
+			return {
+				preUrl: 'order',
+				tabIndex: 0,
+				tabbars: [{
+						name: '全部',
+						key: 'all'
+					},
+					{
+						name: '待付款',
+						key: 'nopay'
+					},
+					{
+						name: '待发货',
+						key: 'noship'
+					},
+					{
+						name: '待收货',
+						key: 'shiped'
+					},
+					{
+						name: '已收货',
+						key: 'received'
+					},
+					{
+						name: '已完成',
+						key: 'finish'
+					},
+					{
+						name: '已关闭',
+						key: 'closed'
+					},
+					{
+						name: '退款中',
+						key: 'refunding'
+					},
+				],
+				form: {
+					time: '',
+					name: '',
+					no: '',
+					phone: ''
+				},
+				tableData: [],
+				shipModel: false,
+				shipForm: {
+					id: 0,
+					express_company: '',
+					express_no: ''
+				},
+				express_company_options: [], // 快递公司列表
+				shipFormRules: {
+					express_company: [{
+						required: true,
+						message: "快递公司不能为空",
+						trigger: "blur"
+					}],
+					express_no: [{
+						required: true,
+						message: "订单号不能为空",
+						trigger: "blur"
+					}]
+				},
+			};
+		},
+		computed: {
+			tab() {
+				return this.tabbars[this.tabIndex].key
+			},
+			// 拼接参数
+			params() {
+				let str = ''
+				for (let key in this.form) {
+					let v = this.form[key]
+					if (v) {
+						if (Array.isArray(v)) {
+							str += `&starttime=${v[0]}&endtime=${v[1]}`
+						} else {
+							str += `&${key}=${v}`
+						}
 					}
 				}
+				return str
 			}
-			return str
-		}
-	},
-	created() {
-		let url = `/admin/express_company/1?limit=50`
-		this.layout.showLoading()
-		this.axios.get(url,{token: true}).then(res=>{
-			console.log('res:',res)
-			this.layout.hideLoading()
-		}).catch(err => {
-			this.layout.hideLoading()
-		})
-	},
-	methods: {
-		// 请求后端数据的方法
-		getListResult(e){
-			console.log("e:",e.list)
-			this.tableData = e.list
 		},
-		getListUrl(){
-			return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&tab=${this.tab}${this.params}`
-		},
-		// 点击tab加载相应数据
-		handleClick(tab, event) {
-			// console.log(tab, event);
-			console.log('tabIndex:', this.tabIndex);
-			this.getList()
-		},
-		// 清空筛选条件
-		clearSearch() {
-			this.form = {
-				time: '',
-				name: '',
-				no: '',
-				type: '',
-				phone: ''
-			};
-			this.$refs.buttonSearch[this.tabIndex].keyword = '';
-			// 通过$refs可以访问子组件的data | methods里面的内容
-			// this.$refs.buttonSearch[this.tabIndex].closeSuperSearch();
-		},
-		// 搜索事件
-		searchEvent(e = false) {
-			// 简单搜索
-			if (typeof e === 'string') {
-				console.log('简单搜索:', e);
-				this.form.no = e
-				return this.getList()
-			}
-			// 高级搜索
-			console.log('高级搜索');
-			console.log("this.params:",this.params)
-			return this.getList()
-		},
-		// 订单发货
-		ship(item) {
-			this.shipModel = true
-			this.shipForm.id = item.id
-		},
-		// 确认发货
-		shipSubmit(){
-			let url = `/admin/order/${this.shipForm.id}/ship`
-			let obj = {...this.shipForm}
-			this.layout.showLoading()
-			this.axios.post(url,obj,{token: true}).then(res=>{
-				console.log('res:',res)
-				this.layout.hideLoading()
-			}).catch(err => {
-				this.layout.hideLoading()
+		created() {
+			let url = '/admin/express_company/1?limit=50'
+			this.axios.get(url, {
+				token: true
+			}).then(res => {
+				let data = res.data.data
+				this.express_company_options = data.list
 			})
+		},
+		methods: {
+			// 请求后端数据的方法
+			getListResult(e) {
+				console.log("e:", e.list)
+				this.tableData = e.list
+			},
+			getListUrl() {
+				return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&tab=${this.tab}${this.params}`
+			},
+			// 点击tab加载相应数据
+			handleClick(tab, event) {
+				// console.log(tab, event);
+				console.log('tabIndex:', this.tabIndex);
+				this.getList()
+			},
+			// 清空筛选条件
+			clearSearch() {
+				this.form = {
+					time: '',
+					name: '',
+					no: '',
+					type: '',
+					phone: ''
+				};
+				this.$refs.buttonSearch[this.tabIndex].keyword = '';
+				// 通过$refs可以访问子组件的data | methods里面的内容
+				// this.$refs.buttonSearch[this.tabIndex].closeSuperSearch();
+			},
+			// 搜索事件
+			searchEvent(e = false) {
+				// 简单搜索
+				if (typeof e === 'string') {
+					console.log('简单搜索:', e);
+					this.form.no = e
+					return this.getList()
+				}
+				// 高级搜索
+				console.log('高级搜索');
+				console.log("this.params:", this.params)
+				return this.getList()
+			},
+			// 点击“订单发货”按钮
+			ship(item) {
+				this.shipModel = true
+				this.shipForm.id = item.order_items[0].order_id
+				console.log('this.shipForm.id:', this.shipForm.id)
+			},
+			shipSubmit() {
+				this.$refs.shipForm.validate(res=>{
+					if(!res) return
+					let url = `/admin/order/${this.shipForm.id}/ship`
+					let obj = { ...this.shipForm
+					}
+					this.layout.showLoading()
+					this.axios.post(url, obj, {
+							token: true
+						})
+						.then(res => {
+							this.shipModel = false
+							this.$message({
+								type: 'success',
+								message: '发货成功'
+							})
+							this.getList()
+							this.layout.hideLoading()
+						}).catch(err => {
+							this.layout.hideLoading()
+						})
+				})
+			}
 		}
-		
-	}
-};
+	};
 </script>
 
 <style></style>

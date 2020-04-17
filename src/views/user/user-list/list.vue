@@ -173,13 +173,13 @@
 			};
 		},
 		methods: {
-			// 获取数据
+			// mixins-common获取数据
 			getListResult(e){
 				console.log('e.list:',e)
 				this.tableData = e.list
 				this.user_level = e.user_level
 			},
-			// 获取请求列表分页的url
+			// mixins-common获取请求列表分页的url
 			getListUrl(){
 				return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.search.keyword}&user_level_id=${this.search.user_level_id}`
 			},

@@ -12,7 +12,7 @@
 		<button-search ref="buttonSearch" @search="searchEvent" @openSuperSearch="form.no = $event" placeholder="要搜索的订单编号">
 			<!-- 左边插槽 -->
 			<template #left>
-				<el-button type="success" size="mini">导出数据</el-button>
+				<el-button type="success" size="mini" @click='exportModel = true'>导出数据</el-button>
 				<el-button type="danger" size="mini" @click='deleteAll'>批量删除</el-button>
 			</template>
 
@@ -137,7 +137,7 @@
 				</el-pagination>
 			</div>
 		</el-footer>
-		<el-dialog title="标题" :visible.sync="shipModel">
+		<el-dialog title="订单发货" :visible.sync="shipModel">
 			<el-form ref="shipForm" :rules="shipFormRules" :model="shipForm" label-width="80px">
 				<el-form-item label="快递公司" prop="express_company">
 					<el-select v-model="shipForm.express_company" placeholder="请选择快递公司">
@@ -152,6 +152,27 @@
 			<div slot="footer" class="dialog-footer">
 				<el-button @click="shipModel = false">取 消</el-button>
 				<el-button type="primary" @click="shipSubmit">确 定</el-button>
+			</div>
+		</el-dialog>
+		
+		<!-- 导出订单设置 模态框 -->
+		<el-dialog title="导出订单" :visible.sync="exportModel" width="40%">
+			<el-form ref="exportForm" :rules="exportFormRules" :model="exportForm" label-width="80px">
+				<el-form-item label="订单类型" prop="tab">
+					<el-select v-model="exportForm.tab" placeholder="请选择订单类型" size="mini">
+						<el-option v-for="(item,index) in tabbars" :key="index" :label="item.name" :value="item.key"></el-option>
+					</el-select>
+				</el-form-item>
+				<el-form-item label="时间范围" prop="time">
+					<el-date-picker v-model="exportForm.time" type="daterange" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+						 size="mini" value-format="yyyy-MM-dd"></el-date-picker>
+				</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+				<el-button @click="exportModel = false">取 消</el-button>
+				<el-button type="primary" @click="exportExcel" :loading="exportLoading">
+					{{exportLoading ? '正在导出数据...' : '确 定'}}
+				</el-button>
 			</div>
 		</el-dialog>
 	</div>
@@ -227,6 +248,19 @@
 					express_no: [{
 						required: true,
 						message: "订单号不能为空",
+						trigger: "blur"
+					}]
+				},
+				exportModel: false,
+				exportForm: {
+					tab: '',
+					time: ''
+				},
+				exportLoading: false,
+				exportFormRules: {
+					tab: [{
+						required: true,
+						message: "订单类型不能为空",
 						trigger: "blur"
 					}]
 				},
@@ -329,6 +363,44 @@
 						}).catch(err => {
 							this.layout.hideLoading()
 						})
+				})
+			},
+			// 导出excel
+			exportExcel(){
+				this.$refs.exportForm.validate(res=>{
+					if(!res) return
+					let params = ''
+					let val = this.exportForm.time
+					if(val && Array.isArray(val)) {
+						params += `&starttime=${val[0]}`
+						params += `&endtime=${val[1]}`
+					}
+					let url = `/admin/order/excelexport?tab=${this.exportForm.tab}${params}`
+					this.exportLoading = true
+					this.axios.post(url,{},{
+					    token:true,
+					    responseType: 'blob' // 重要
+					}).then(res=>{
+						console.log('res:',res)
+					    if (res.status == 200) {
+					        let url = window.URL.createObjectURL(new Blob([res.data]))
+					        let link= document.createElement('a')
+					        link.style.display='none'
+					        link.href=url
+					        let filename = new Date().getTime() + '.xlsx';
+					        link.setAttribute('download', filename)
+					        document.body.appendChild(link)
+					        link.click()
+					    }
+						this.exportLoading = false
+						this.exportModel = false
+					}).catch(err=>{
+					    this.$message({
+					        type:"error",
+					        message:"下载失败"
+					    })
+						this.exportLoading = false
+					})
 				})
 			}
 		}

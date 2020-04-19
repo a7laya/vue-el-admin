@@ -3,7 +3,7 @@
 		<el-tabs v-model="activeName">
 			<!-- 支付设置 -->
 			<el-tab-pane label="支付设置" name="second">
-				<div><el-button type="primary" @click="openModel(false)" size="small">添加模板</el-button></div>
+				<div><el-button type="primary" size="small">添加模板</el-button></div>
 				<!-- 表格 -->
 				<el-table border class="mt-3" :data="tableData" style="width: 100%">
 					<el-table-column label="支付方式">
@@ -19,7 +19,7 @@
 					</el-table-column>
 					<el-table-column label="操作" align="center" width="188">
 						<template slot-scope="scope">
-							<el-button plain type="text" size="mini" @click="openModel(scope)">配置</el-button>
+							<el-button plain type="text" size="mini" @click="openDrawer(scope.row.key)">配置</el-button>
 						</template>
 					</el-table-column>
 				</el-table>
@@ -27,17 +27,17 @@
 
 			<!-- 购物设置 -->
 			<el-tab-pane label="购物设置" name="third">
-				<el-form ref="form" label-width="140px">
+				<el-form ref="form" :model="form" label-width="140px">
 					<el-form-item label="未支付订单">
-						<el-input type="number" size="mini" style="width: 222px;" placeholder="天数">
-							<template slot="append">天后自动关闭</template>
+						<el-input v-model="form.close_order_minute" type="number" size="mini" style="width: 222px;" placeholder="分钟">
+							<template slot="append">分钟后自动关闭</template>
 						</el-input>
 						<small class="text-secondary d-block">
-							订单下单未付款，n天后自动关闭，设置0不关闭
+							订单下单未付款，n分钟后自动关闭，设置0不关闭
 						</small>
 					</el-form-item>
 					<el-form-item label="已发货订单">
-						<el-input type="number" size="mini" style="width: 222px;" placeholder="天数">
+						<el-input v-model="form.auto_received_day" type="number" size="mini" style="width: 222px;" placeholder="天数">
 							<template slot="append">天后自动确认收货</template>
 						</el-input>
 						<small class="text-secondary d-block">
@@ -45,114 +45,204 @@
 						</small>
 					</el-form-item>
 					<el-form-item label="已完成订单">
-						<el-input type="number" size="mini" style="width: 222px;" placeholder="天数">
+						<el-input v-model="form.after_sale_day" type="number" size="mini" style="width: 222px;" placeholder="天数">
 							<template slot="append">天内允许申请售后</template>
 						</el-input>
 						<small class="text-secondary d-block">
 							订单完成后，用户在n天内可以发起售后申请，设置0不允许发起售后申请
 						</small>
 					</el-form-item>
-					<el-form-item label="运费组合策略">
-						<el-select placeholder="运费组合策略" size="mini">
-							<el-option label="区域一" value="shanghai"></el-option>
-							<el-option label="区域二" value="beijing"></el-option>
-						</el-select>
-					</el-form-item>
 					
 					<el-form-item>
-						<el-button type="primary" @click="onSubmit" size="medium">保存</el-button>
+						<el-button type="primary" size="medium" @click="submitDrawer">保存</el-button>
 					</el-form-item>
 				</el-form>
 			</el-tab-pane>
 		</el-tabs>
-		<!--===== 新增 | 修改等级模态框 =====-->
-		<el-dialog title="添加等级" :visible.sync="createModel" top="5vh">
-			<!-- 表单内容 -->
-			<el-form ref="form" :rules="rules" :model="form" label-width="80px">
-				<el-form-item label="等级名称" prop="name">
-					<el-input v-model="form.name" placeholder="等级名称" size="mini" class="w-50"></el-input>
-					<small class="text-secondary d-block">设置会员等级名称</small>
-				</el-form-item>
-				<el-form-item label="等级权重" prop="level">
-					<el-input-number v-model="form.level" placeholder="等级权重" size="mini" class="w-25"></el-input-number>
-					<small class="text-secondary d-block">设置会员等级排序(数字越大等级越高)</small>
-				</el-form-item>
-				<el-form-item label="是否启用"><el-switch v-model="form.status" :active-value="1" :inactive-value="0"></el-switch></el-form-item>
-				<el-form-item label="升级条件">
-					<div class="d-flex align-items-center">
-						<small>累计消费满</small>
-						<el-input type="number" placeholder="大于等于0" v-model="form.consume" size="mini" class="w-50 mx-2">
-							<template slot="append">元</template>
-						</el-input>
+		
+		<!-- 抽屉组件 -->
+		<el-drawer title="配置支付方式" :visible.sync="drawer" direction="rtl"  size='40%'>
+			<div class="position-absolute w-100 overflow-auto p-3" style="top: 52px; bottom: 60px;" v-loading="drawerLoading">
+				<el-form ref="formPay" :model="form" label-width="100px">
+					<!-- 支付宝支付 -->
+					<div v-if="drawerType === 'alipay'">
+						<el-form-item label="app_id">
+							<el-input v-model="form.alipay.app_id" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="公钥">
+							<el-input type="textarea" :rows="4" v-model="form.alipay.ali_public_key" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="私钥">
+							<el-input type="textarea" :rows="4" v-model="form.alipay.private_key" size="mini"></el-input>
+						</el-form-item>
 					</div>
-					<div class="d-flex align-items-center">
-						<small>累计次数满</small>
-						<el-input type="number" placeholder="大于等于0" v-model="form.times" size="mini" class="w-50 mx-2">
-							<template slot="append">次</template>
-						</el-input>
-					</div>
-				</el-form-item>
-				<el-form-item label="折扣率">
-					<el-input type="number" v-model="form.discount" placeholder="折扣率" size="mini" class="w-50">
-						<template slot="append">%</template>
-					</el-input>
-					<small class="text-secondary d-block">输入90表示打九折</small>
-				</el-form-item>
 				
-			</el-form>
-			<div slot="footer" class="dialog-footer">
-				<el-button @click="createModel = false">取 消</el-button>
-				<el-button type="primary" @click="submit">确 定</el-button>
+					<!-- 微信支付 -->
+					<div v-if="drawerType === 'wxpay'">
+						<el-form-item label="公众号APPID">
+							<el-input v-model="form.wxpay.app_id" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="小程序APPID">
+							<el-input v-model="form.wxpay.miniapp_id" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="小程序secret">
+							<el-input v-model="form.wxpay.secret" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="appid">
+							<el-input v-model="form.wxpay.appid" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="商户号">
+							<el-input v-model="form.wxpay.mch_id" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="API密钥">
+							<el-input type="textarea" :rows="4" v-model="form.wxpay.key" size="mini"></el-input>
+						</el-form-item>
+						<el-form-item label="cert_client">
+							<el-upload
+							action="/admin/sysconfig/upload"
+							:headers="{ token:$store.state.user.token }"
+							:limit="1"
+							accept=".pem"
+							:on-success="uploadClientSuccess"
+							>
+								<el-button type="primary" size="small">点击上传</el-button>
+								<div class="el-upload__tip" slot="tip">
+									<div class="text-danger overflow-auto">{{form.wxpay.cert_client ? form.wxpay.cert_client : '还未配置'}}</div>
+									<div class="small text-muted">例如：apiclient_cert.pem</div>
+								</div>
+							</el-upload>
+						</el-form-item>
+						<el-form-item label="cert_key">
+							<el-upload
+							action="/admin/sysconfig/upload"
+							:headers="{ token:$store.state.user.token }"
+							:limit="1"
+							accept=".pem"
+							:on-success="uploadKeySuccess"
+							>
+								<el-button type="primary" size="small">点击上传</el-button>
+								<div class="el-upload__tip" slot="tip">
+									<div class="text-danger overflow-auto">{{form.wxpay.cert_key ? form.wxpay.cert_key : '还未配置'}}</div>
+									<div class="small text-muted">例如：apiclient_cert.pem</div>
+								</div>
+							</el-upload>
+						</el-form-item>
+					</div>
+				</el-form>
 			</div>
-		</el-dialog>
+			<div class="position-fixed border-top w-100 d-flex align-items-center px-3" style="height: 60px; bottom: 0;">
+				<el-button @click="closeDrawer">取消</el-button>
+				<el-button type="primary" @click="submitDrawer" :loading="submitDrawerLoading">
+					{{submitDrawerLoading ? '配置中' : '确定'}}
+				</el-button>
+			</div>
+		</el-drawer>
 	</div>
 </template>
 
 <script>
 export default {
+	inject: ['layout'],
 	data() {
 		return {
-			editIndex: -1,
-			createModel: false,
+			activeName: 'second',
+			drawer: false, // 抽屉组件是否显示
+			drawerType: 'alipay',
+			drawerLoading: false,
+			submitDrawerLoading: false, // 提交配置按钮的loading状态
 			form: {
 				key: '',
-				customer: ''
+				customer: '',
+				close_order_minute: 0, // 未支付订单自动关闭时间：分钟，0不自动关闭
+				auto_received_day: 0,  // 已发货订单自动确认时间：天，0不自动收货
+				after_sale_day: 0,     // 已完成订单允许申请售后：天
+				alipay: { // 支付宝支付配置
+					app_id: "", 
+					ali_public_key: "", // 公钥 
+					private_key: "",    // 私钥
+				}, 
+				wxpay: { // 微信支付配置
+					app_id:'', // 公众号APPID 
+					miniapp_id:'', // 小程序APPID 
+					secret:"", // 小程序secret 
+					appid:'', // appid 
+					mch_id:'', // 商户号 
+					key:'', // API 密钥 
+					cert_client:'', 
+					cert_key:'' 
+				}
 			},
-			activeName: 'second',
 			tableData: [
-				{
-					name: '银行卡支付',
+				{	
+					key: 'alipay',
+					name: '支付宝支付',
 					desc: '该系统支持即时到账接口',
-					src: 'http://127.0.0.1:8080/img/demo1.4419d7d7.jpeg'
+					src: 'http://wxcs.niuteam.cn/addons/NsAlipay/ico.png'
+				},
+				{	
+					key: 'wxpay',
+					name: '微信支付',
+					desc: '该系统支持即时微信网页支付和扫码支付',
+					src: 'http://wxcs.niuteam.cn/addons/NsWeixinpay/ico.png'
 				}
 			],
 		};
 	},
+	created() {
+		this.getData()
+	},
 	methods: {
-		onSubmit(){
-			console.log("保存")
+		getData(){
+			let url = '/admin/sysconfig'
+			this.layout.showLoading()
+			this.axios.get(url,{token:true}).then(res=>{
+				this.form = res.data.data
+				console.log('this.form:',this.form)
+				this.layout.hideLoading()
+			}).catch(err=>{
+				this.layout.hideLoading()
+			})
 		},
-		// 打开模态框
-		openModel(e = false) {
-			// 增加
-			if (!e) {
-				// 初始化表单
-				this.form = {
-					name: '',
-					consume: 0, // 累计消费
-					times: 0, // 累计次数
-					discount: 0, // 折扣
-					level: 0,
-					status: 1,
-				};
-				this.editIndex = -1;
-			} else {
-				// 修改
-				this.form = { ...e.row };
-				this.editIndex = e.$index;
-			}
-			// 打开dialog
-			this.createModel = true;
+		// 打开抽屉
+		openDrawer(type){
+			this.drawerType = type
+			this.drawer = true
+		},
+		// 关闭抽屉 
+		closeDrawer(){
+			this.drawer = false
+		},
+		// 上传成功
+		uploadClientSuccess(response, file, fileList){
+			console.log('response:',response)
+			console.log('file:',file)
+			console.log('fileList:',fileList)
+			this.form.wxpay.cert_client = response.data
+		},
+		// 上传成功
+		uploadKeySuccess(response, file, fileList){
+			this.form.wxpay.cert_key = response.data
+		},
+		// 提交抽屉
+		submitDrawer(){
+			if(this.submitDrawerLoading) return
+			this.submitDrawerLoading = true
+			let url = `/admin/sysconfig`
+			let obj = {...this.form}
+			this.layout.showLoading()
+			this.axios.post(url,obj,{token:true}).then(res=>{
+				console.log('res:',res)
+				this.layout.hideLoading()
+				this.drawer = false
+				this.submitDrawerLoading = false
+				this.$message({
+					type: 'success',
+					message: '设置成功'
+				})
+			}).catch(err=>{
+				this.layout.hideLoading()
+				this.submitDrawerLoading = false
+			})
 		},
 	}
 };

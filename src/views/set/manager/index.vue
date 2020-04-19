@@ -40,7 +40,9 @@
 
 			<!-- 角色列表 -->
 			<el-tab-pane label="角色列表" name="role">
-				<div class="d-flex align-items-center"><el-button type="primary" @click="openDialog('role')" size="small" v-auth="'角色管理'">添加角色</el-button></div>
+				<div class="d-flex align-items-center">
+					<el-button type="primary" @click="openDialog('role')" size="small" v-auth="'角色管理'">添加角色</el-button>
+				</div>
 				<!-- 表格 -->
 				<el-table border class="mt-3" :data="roleList" style="width: 100%">
 					<el-table-column prop="name" label="角色名称" align="center" min-width="144"></el-table-column>
@@ -56,7 +58,7 @@
 					<el-table-column label="操作" align="center" width="222">
 						<template slot-scope="scope">
 							<el-button plain type="text" size="mini" @click="openDialog('role', scope.row)">修改</el-button>
-							<el-button plain type="text" size="mini" @click="openDrawer(scope)">配置权限</el-button>
+							<el-button plain type="text" size="mini" @click="openDrawer(scope.row)">配置权限</el-button>
 							<el-button plain type="text" size="mini" @click="deleteItem(scope, roleList)">删除</el-button>
 						</template>
 					</el-table-column>
@@ -65,8 +67,11 @@
 
 			<!-- 权限列表 -->
 			<el-tab-pane label="权限列表" name="rule">
-				<div class="d-flex align-items-center"><el-button type="primary" @click="openDialog('rule')" size="small" v-auth="'添加规则'">添加规则</el-button></div>
-				<el-tree :data="ruleList" :props="defaultProps" @node-click="handleNodeClick" default-expand-all :expand-on-click-node="false">
+				<div class="d-flex align-items-center">
+					<el-button type="primary" @click="openDialog('rule')" size="small" v-auth="'添加规则'">添加规则</el-button>
+				</div>
+				<el-tree :data="ruleList" :props="defaultProps" @node-click="handleNodeClick" default-expand-all
+				 :expand-on-click-node="false">
 					<span class="custom-tree-node" slot-scope="{ node, data }">
 						<div>
 							<span v-if="data.menu === 1" :class="data.icon ? data.icon : 'el-icon-star-off'" class="mr-2 text-muted"></span>
@@ -90,18 +95,12 @@
 		<div style="height: 120px;"></div>
 
 		<!-- 底部分页 -->
-		<el-footer v-if="preUrl != 'rule'" class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom" style="margin-left: 200px;">
+		<el-footer v-if="preUrl != 'rule'" class="border-top d-flex align-items-center px-0 bg-white position-fixed fixed-bottom"
+		 style="margin-left: 200px;">
 			<!-- 分页 -->
 			<div class="flex-grow-1 ml-2">
-				<el-pagination
-					@size-change="handleSizeChange"
-					@current-change="handleCurrentChange"
-					:current-page="page.current"
-					:page-sizes="page.sizes"
-					:page-size="page.size"
-					layout="total, sizes, prev, pager, next, jumper"
-					:total="page.total"
-				></el-pagination>
+				<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page.current"
+				 :page-sizes="page.sizes" :page-size="page.size" layout="total, sizes, prev, pager, next, jumper" :total="page.total"></el-pagination>
 			</div>
 		</el-footer>
 
@@ -109,7 +108,9 @@
 		<el-dialog :title="dialogTitle" :visible.sync="dialogVisible" top="5vh" :before-close="handleClose">
 			<!-- 添加 | 修改管理员 -->
 			<el-form v-if="preUrl === 'manager'" ref="manager" :rules="rules" :model="form.manager" label-width="80px">
-				<el-form-item label="用户名" prop="username"><el-input v-model="form.manager.username" placeholder="用户名" size="mini" class="w-50"></el-input></el-form-item>
+				<el-form-item label="用户名" prop="username">
+					<el-input v-model="form.manager.username" placeholder="用户名" size="mini" class="w-50"></el-input>
+				</el-form-item>
 				<el-form-item label="密码" prop="password">
 					<el-input type="password" v-model="form.manager.password" placeholder="密码" size="mini" class="w-50"></el-input>
 				</el-form-item>
@@ -134,7 +135,9 @@
 
 			<!-- 添加 | 修改角色 -->
 			<el-form v-if="preUrl === 'role'" ref="role" :rules="rules" :model="form.role" label-width="80px">
-				<el-form-item label="角色名称" prop="roleName"><el-input v-model="form.role.name" placeholder="角色名称" size="mini" class="w-50"></el-input></el-form-item>
+				<el-form-item label="角色名称" prop="roleName">
+					<el-input v-model="form.role.name" placeholder="角色名称" size="mini" class="w-50"></el-input>
+				</el-form-item>
 				<el-form-item label="角色描述" prop="desc">
 					<el-input type="textarea" :rows="2" v-model="form.role.desc" placeholder="角色描述" size="mini"></el-input>
 				</el-form-item>
@@ -160,8 +163,12 @@
 						<el-radio :label="0" border>规则</el-radio>
 					</el-radio-group>
 				</el-form-item>
-				<el-form-item label="规则名称" prop="ruleName"><el-input v-model="form.rule.name" placeholder="规则名称" size="mini" class="w-50"></el-input></el-form-item>
-				<el-form-item label="图标" prop="icon" v-if="form.rule.menu"><el-input v-model="form.rule.icon" placeholder="图标" size="mini"></el-input></el-form-item>
+				<el-form-item label="规则名称" prop="ruleName">
+					<el-input v-model="form.rule.name" placeholder="规则名称" size="mini" class="w-50"></el-input>
+				</el-form-item>
+				<el-form-item label="图标" prop="icon" v-if="form.rule.menu">
+					<el-input v-model="form.rule.icon" placeholder="图标" size="mini"></el-input>
+				</el-form-item>
 				<el-form-item label="前台路由路径" prop="frontpath" v-if="form.rule.menu && form.rule.rule_id > 0">
 					<el-input v-model="form.rule.frontpath" placeholder="前台路由路径" size="mini"></el-input>
 				</el-form-item>
@@ -192,251 +199,312 @@
 				<el-button type="primary" @click="submit">确 定</el-button>
 			</div>
 		</el-dialog>
-		
-		<el-drawer
-		  title="我是标题"
-		  :visible.sync="drawer"
-		  direction="rtl"
-		  :before-close="handleClose">
-		  <span>我来啦!</span>
+		<!-- 抽屉组件 -->
+		<el-drawer title="配置权限" :visible.sync="drawer" direction="rtl" :before-close="handleClose" size='40%'>
+			<div class="position-absolute w-100 overflow-auto p-3" style="top: 52px; bottom: 60px;" v-loading="drawerLoading">
+				<el-tree
+					ref='tree'
+				  :data="ruleList"
+				  show-checkbox
+				  node-key="id"
+				  default-expand-all
+				  :default-checked-keys="checkedKeys"
+				  :props="defaultProps"
+				  :check-strictly="true"
+				  @check="check">
+				</el-tree>
+			</div>
+			<div class="position-fixed border-top w-100 d-flex align-items-center px-3" style="height: 60px; bottom: 0;">
+				<el-button @click="closeDrawer">取消</el-button>
+				<el-button type="primary" @click="submitRules" :loading="submitRulesLoading">
+					{{submitRulesLoading ? '配置中' : '确定'}}
+				</el-button>
+			</div>
 		</el-drawer>
 	</div>
 </template>
 
 <script>
-import common from '@/common/mixins/common.js';
-export default {
-	inject: ['app', 'layout'],
-	mixins: [common],
-	data() {
-		return {
-			preUrl: 'manager',
-			keyword: '',
-			editIndex: -1,
-			form: {
-				manager: {
-					username: '',
-					password: '',
-					avatar: '',
-					role_id: '',
-					status: 1
+	import common from '@/common/mixins/common.js';
+	export default {
+		inject: ['app', 'layout'],
+		mixins: [common],
+		data() {
+			return {
+				preUrl: 'manager',
+				keyword: '',
+				editIndex: -1,
+				form: {
+					manager: {
+						username: '',
+						password: '',
+						avatar: '',
+						role_id: '',
+						status: 1
+					},
+					role: {
+						name: '',
+						desc: '',
+						status: 1
+					},
+					rule: {
+						menu: 0,
+						rule_id: '',
+						name: '',
+						status: 1,
+						frontpath: '',
+						desc: '',
+						condition: '',
+						icon: '',
+						method: 'GET',
+						order: 0
+					}
 				},
-				role: {
-					name: '',
-					desc: '',
-					status: 1
+				managerList: [], // 管理员 表格数据
+				roleList: [], // 角  色 表格数据
+				ruleList: [], // 权  限 树状结构数据
+				defaultProps: {
+					// 权  限 映射字段
+					children: 'child',
+					label: 'name'
 				},
-				rule: {
-					menu: 0,
-					rule_id: '',
-					name: '',
-					status: 1,
-					frontpath: '',
-					desc: '',
-					condition: '',
-					icon: '',
-					method: 'GET',
-					order: 0
-				}
-			},
-			managerList: [], // 管理员 表格数据
-			roleList: [], // 角  色 表格数据
-			ruleList: [], // 权  限 树状结构数据
-			defaultProps: {
-				// 权  限 映射字段
-				children: 'child',
-				label: 'name'
-			},
-			rules: {
-				username: [
-					{
+				rules: {
+					username: [{
 						required: true,
 						message: '请输入用户名',
 						trigger: 'blur'
-					}
-				],
-				roleName: [
-					{
+					}],
+					roleName: [{
 						required: true,
 						message: '请输入角色名称',
 						trigger: 'blur'
-					}
-				],
-				password: [
-					{
+					}],
+					password: [{
 						required: true,
 						message: '请输入密码',
 						trigger: 'blur'
-					}
-				],
-				role: [
-					{
+					}],
+					role: [{
 						required: true,
 						message: '请选择角色',
 						trigger: 'blur'
-					}
-				],
-				parentRule: [
-					{
+					}],
+					parentRule: [{
 						required: true,
 						message: '请选择上级规则',
 						trigger: 'blur'
-					}
-				],
-				ruleName: [
-					{
+					}],
+					ruleName: [{
 						required: true,
 						message: '请填写规则名称',
 						trigger: 'blur'
-					}
-				],
+					}],
+				},
+
+				dialogVisible: false,
+				dialogType: 'manager',
+				dialogTitle: '',
+				roleOptions: [],
+				ruleOptions: [],
+				drawer: false, // 抽屉组件是否显示
+				drawerLoading: false, // 抽屉组件loading是否显示
+				checkedKeys: [], // 选中的权限列表， 一个数组存着id
+				role_id: 0, // 配置权限的角色id
+				submitRulesLoading: false // 按钮显示 配置中。。。
+			};
+		},
+		computed: {
+			tabName() {
+				return {
+					manager: '管理员',
+					role: '角色',
+					rule: '权限'
+				} [this.preUrl];
+			}
+		},
+		filters: {
+			tree(item) {
+				let level = item.level;
+				let str = '|';
+				if (!level) return item.name;
+				for (let i = 0; i < level; i++) {
+					str += '--';
+				}
+				return str + item.name;
+			}
+		},
+		methods: {
+			// mixins-common获取数据
+			getListResult(e) {
+				console.log('e:', e);
+				switch (this.preUrl) {
+					case 'manager':
+						this.roleOptions = e.role;
+						this.managerList = e.list;
+						break;
+					case 'role':
+						this.roleList = e.list;
+						break;
+					case 'rule':
+						this.ruleOptions = e.rules;
+						this.ruleList = e.list;
+						break;
+					default:
+						break;
+				}
+			},
+			// mixins-common获取请求列表分页的url
+			getListUrl() {
+				if (this.preUrl === 'manager') return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.keyword}`;
+				return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}`;
 			},
 
-			dialogVisible: false,
-			dialogType: 'manager',
-			dialogTitle: '',
-			roleOptions: [],
-			ruleOptions: [],
-			drawer: false,// 抽屉组件是否显示
-		};
-	},
-	computed: {
-		tabName() {
-			return { manager: '管理员', role: '角色', rule: '权限' }[this.preUrl];
-		}
-	},
-	filters: {
-		tree(item) {
-			let level = item.level;
-			let str = '|';
-			if (!level) return item.name;
-			for (let i = 0; i < level; i++) {
-				str += '--';
+			// ========== 模态框相关操作 ==========
+			// 打开模态框
+			openDialog(type, item = false) {
+				// 传入类型 ‘manager’ - ‘role’ - ‘rule’
+				this.dialogType = type;
+				this.dialogTitle = `${item ? '修改' : '添加'}${this.tabName}`;
+				// 组织表单
+				switch (type) {
+					case 'manager':
+						if (!item) {
+							this.form.manager = {
+								username: '',
+								password: '',
+								avatar: '',
+								role_id: '',
+								status: 1
+							};
+						} else {
+							this.form.manager = { ...item};
+						}
+						break;
+					case 'role':
+						if (!item) {
+							this.form.role = {
+								name: '',
+								desc: '',
+								status: 1
+							};
+						} else {
+							this.form.role = { ...item
+							};
+						}
+						break;
+					case 'rule':
+						if (!item || typeof item === 'number') {
+							this.form.rule = {
+								menu: 0,
+								rule_id: '',
+								name: '',
+								status: 1,
+								frontpath: '',
+								desc: '',
+								condition: '',
+								icon: '',
+								method: 'GET',
+								order: 0
+							};
+							this.form.rule.rule_id = item
+						} else {
+							this.form.rule = { ...item
+							};
+						}
+						break;
+					default:
+						break;
+				}
+				// 显示模态框
+				this.dialogVisible = true;
+			},
+			submit() {
+				this.$refs[this.preUrl].validate(res => {
+					if (!res) return
+					let item = this.form[this.preUrl];
+					this.addOrEdit(item, item.id);
+					this.dialogVisible = false;
+				});
+			},
+
+			// 模态框关闭前
+			handleClose(done) {
+				done()
+				// this.$confirm('确认关闭？')
+				// 	.then(_ => {
+				// 		done();
+				// 	})
+				// 	.catch(_ => {});
+			},
+
+			// 选择头像
+			chooseImage() {
+				this.app.chooseImage(res => {
+					this.form.manager.avatar = res[0].url;
+				}, 1);
+			},
+
+			// =========== 树结构操作 ==========
+			// 点击了相应节点
+			handleNodeClick(data) {
+				console.log(data);
+			},
+
+			// 打开抽屉，进行权限配置
+			openDrawer(item) {
+				console.log('item:',item)
+				this.checkedKeys = item.rules.map(v=>v.id)
+				this.role_id = item.id
+				this.drawer = true
+				// 请求权限列表
+				let url = `/admin/rule/1`
+				this.drawerLoading = true
+				this.axios.get(url,{token:true}).then(res=>{
+					this.ruleList = res.data.data.list
+					this.$refs.tree.setCheckedKeys(this.checkedKeys)
+					this.drawerLoading = false
+				}).catch(err=>{
+					this.drawerLoading = false
+				})
+			},
+			
+			// 关闭抽屉 
+			closeDrawer(){
+				this.drawer = false
+				this.checkedKeys = []
+				this.ruleList = []
+				this.role_id = 0
+			},
+			
+			// 点选树形节点
+			check(...e){
+				this.checkedKeys = e[1].checkedKeys
+				console.log('this.checkedKeys:',this.checkedKeys)
+			},
+			
+			// 提交配置权限修改
+			submitRules(){
+				let url = `/admin/role/set_rules`
+				let obj = {
+					id: this.role_id,
+					rule_ids: this.checkedKeys
+				}
+				this.submitRulesLoading = true
+				this.axios.post(url,obj,{token:true}).then(res=>{
+					console.log('res:',res)
+					this.submitRulesLoading = false
+					this.getList()
+					this.$message({
+						type: 'success',
+						message: '配置成功'
+					})
+					this.closeDrawer()
+				}).catch(err=>{
+					this.submitRulesLoading = false
+				})
 			}
-			return str + item.name;
 		}
-	},
-	methods: {
-		// mixins-common获取数据
-		getListResult(e) {
-			console.log('e:', e);
-			switch (this.preUrl) {
-				case 'manager':
-					this.roleOptions = e.role;
-					this.managerList = e.list;
-					break;
-				case 'role':
-					this.roleList = e.list;
-					break;
-				case 'rule':
-					this.ruleOptions = e.rules;
-					this.ruleList = e.list;
-					break;
-				default:
-					break;
-			}
-		},
-		// mixins-common获取请求列表分页的url
-		getListUrl() {
-			if (this.preUrl === 'manager') return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}&keyword=${this.keyword}`;
-			return `/admin/${this.preUrl}/${this.page.current}?limit=${this.page.size}`;
-		},
-
-		// ========== 模态框相关操作 ==========
-		// 打开模态框
-		openDialog(type, item = false) {
-			// 传入类型 ‘manager’ - ‘role’ - ‘rule’
-			this.dialogType = type;
-			this.dialogTitle = `${item ? '修改' : '添加'}${this.tabName}`;
-			// 组织表单
-			switch (type) {
-				case 'manager':
-					if (!item) {
-						this.form.manager = {
-							username: '',
-							password: '',
-							avatar: '',
-							role_id: '',
-							status: 1
-						};
-					} else {
-						this.form.manager = { ...item };
-					}
-					break;
-				case 'role':
-					if (!item) {
-						this.form.role = {
-							name: '',
-							desc: '',
-							status: 1
-						};
-					} else {
-						this.form.role = { ...item };
-					}
-					break;
-				case 'rule':
-					if (!item || typeof item === 'number') {
-						this.form.rule = {
-							menu: 0,
-							rule_id: '',
-							name: '',
-							status: 1,
-							frontpath: '',
-							desc: '',
-							condition: '',
-							icon: '',
-							method: 'GET',
-							order: 0
-						};
-						this.form.rule.rule_id = item
-					} else {
-						this.form.rule = { ...item };
-					}
-					break;
-				default:
-					break;
-			}
-			// 显示模态框
-			this.dialogVisible = true;
-		},
-		submit() {
-			this.$refs[this.preUrl].validate(res => {
-				if(!res) return
-				let item = this.form[this.preUrl];
-				this.addOrEdit(item, item.id);
-				this.dialogVisible = false;
-			});
-		},
-
-		// 模态框关闭前
-		handleClose(done) {
-			done()
-			// this.$confirm('确认关闭？')
-			// 	.then(_ => {
-			// 		done();
-			// 	})
-			// 	.catch(_ => {});
-		},
-
-		// 选择头像
-		chooseImage() {
-			this.app.chooseImage(res => {
-				this.form.manager.avatar = res[0].url;
-			}, 1);
-		},
-
-		// =========== 树结构操作 ==========
-		// 点击了相应节点
-		handleNodeClick(data) {
-			console.log(data);
-		},
-		
-		// 打开抽屉，进行权限配置
-		openDrawer(scope) {
-			this.drawer = true
-		}
-	}
-};
+	};
 </script>
 
 <style></style>

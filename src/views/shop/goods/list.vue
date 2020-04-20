@@ -81,9 +81,9 @@
 				<template slot-scope="scope">
 					<el-button type="text" size="mini">基础设置</el-button>
 					<el-button type="text" size="mini">商品规格</el-button>
-					<el-button type="text" size="mini">商品属性</el-button>
-					<el-button type="text" size="mini">媒体设置</el-button>
-					<el-button type="text" size="mini" @click="navigate('shop_goods_content', scope.row.id)">商品详情</el-button>
+					<el-button type="text" size="mini" :class="!scope.row.goods_attrs.length ? 'text-danger' : ''" @click="navigate('shop_goods_attr', scope.row.id)">商品属性</el-button>
+					<el-button type="text" size="mini" :class="!scope.row.goods_banner.length ? 'text-danger' : ''" @click="navigate('shop_goods_banner', scope.row.id)">媒体设置</el-button>
+					<el-button type="text" size="mini" :class="!scope.row.content ? 'text-danger' : ''" @click="navigate('shop_goods_content', scope.row.id)">商品详情</el-button>
 					<el-button type="text" size="mini">折扣设置</el-button>
 					<el-button type="text" size="mini">删除商品</el-button>
 				</template>

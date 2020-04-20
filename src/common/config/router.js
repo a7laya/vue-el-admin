@@ -32,6 +32,14 @@ let routes = [
 					component: "shop/goods/content"
 				},
 				{	
+					meta: { title:"媒体设置" },
+					component: "shop/goods/banner"
+				},
+				{	
+					meta: { title:"属性设置" },
+					component: "shop/goods/attr"
+				},
+				{	
 					meta: { title:"相册管理" },
 					component: "image/index"
 				},

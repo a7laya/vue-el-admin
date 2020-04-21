@@ -150,7 +150,7 @@
 			</el-form>
 
 			<!-- 添加 | 修改规则-->
-			<el-form v-if="preUrl === 'rule'" ref="rule" :rules="rules" :model="form.rule" label-width="100px">
+			<el-form v-if="preUrl === 'rule'" ref="rule" :rules="rules" :model="form.rule" label-width="120px">
 				<el-form-item label="上级规则" prop="parentRule">
 					<el-select v-model="form.rule.rule_id" placeholder="请选择上级规则" size="mini">
 						<el-option label="顶级规则" :value="0"></el-option>
@@ -248,16 +248,16 @@
 						status: 1
 					},
 					rule: {
-						menu: 0,
-						rule_id: '',
-						name: '',
-						status: 1,
-						frontpath: '',
-						desc: '',
-						condition: '',
-						icon: '',
-						method: 'GET',
-						order: 0
+						menu:0,
+						rule_id:"",
+						name:"",
+						status:1,
+						frontpath:"",
+						desc:"",
+						condition:"",
+						icon:"",
+						method:"GET",
+						order:50
 					}
 				},
 				managerList: [], // 管理员 表格数据
@@ -388,25 +388,24 @@
 								status: 1
 							};
 						} else {
-							this.form.role = { ...item
-							};
+							this.form.role = { ...item};
 						}
 						break;
 					case 'rule':
 						if (!item || typeof item === 'number') {
 							this.form.rule = {
-								menu: 0,
-								rule_id: '',
-								name: '',
-								status: 1,
-								frontpath: '',
-								desc: '',
-								condition: '',
-								icon: '',
-								method: 'GET',
-								order: 0
+								menu:0,
+								rule_id:"",
+								name:"",
+								status:1,
+								frontpath:"",
+								desc:"",
+								condition:"",
+								icon:"",
+								method:"",
+								order:50
 							};
-							this.form.rule.rule_id = item
+							this.form.rule.rule_id = typeof item === 'number' ? item : "" 
 						} else {
 							this.form.rule = { ...item
 							};

@@ -70,7 +70,7 @@
 				</template>
 			</el-table-column>
 			<el-table-column prop="stock" label="总库存" align="center" width="66"></el-table-column>
-			<el-table-column label="价格(元)" align="center" width="188">
+			<el-table-column label="销售价/原价(元)" align="center" width="188">
 				<template  slot-scope="scope">
 					<span class="text-danger">￥{{scope.row.min_price}}</span>
 					<span>/</span>
@@ -79,8 +79,8 @@
 			</el-table-column>
 			<el-table-column label="操作" align="center">
 				<template slot-scope="scope">
-					<el-button type="text" size="mini">基础设置</el-button>
-					<el-button type="text" size="mini">商品规格</el-button>
+					<el-button type="text" size="mini" @click="navigate('shop_goods_create', scope.row.id)">基础设置</el-button>
+					<el-button type="text" size="mini" @click="navigate('shop_goods_sku', scope.row.id)">商品规格</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.goods_attrs.length ? 'text-danger' : ''" @click="navigate('shop_goods_attr', scope.row.id)">商品属性</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.goods_banner.length ? 'text-danger' : ''" @click="navigate('shop_goods_banner', scope.row.id)">媒体设置</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.content ? 'text-danger' : ''" @click="navigate('shop_goods_content', scope.row.id)">商品详情</el-button>

@@ -16,10 +16,10 @@
 				@click="chooseImage"/>
 			</template>
 		</div>
-		<input @input="inputChange" :value='item.name' class="form-control text-center border-0" style="width: 80px;height: 30px; font-size: 12px;" />
+		<input v-if="type === 0" @input="inputChange" :value='item.text' class="form-control text-center border-0" style="width: 80px;height: 30px; font-size: 12px;" />
 		<span class="btn btn-light p-0 position-absolute" 
 		style="line-height: 1; cursor: pointer; right: -10px;top: -10px;"
-		@click="delValue">
+		@click="delSkuValueEvent">
 			<i class="el-icon-circle-close"></i>
 		</span>
 	</div>
@@ -27,6 +27,7 @@
 
 <script>
 	import {mapMutations} from 'vuex'
+	let defaultValue = ['属性值', '#FFFFFF', '/assets/avatar.png']
 	export default {
 		inject:['app'],
 		props: {
@@ -39,8 +40,42 @@
 			index2: Number, // 卡片内规格列表的index
 			item: Object
 		},
+		watch:{
+			type(newVal, oldVal) {
+				let keys = ['text', 'color', 'image']
+				this.item.value = this.item[keys[newVal]] ||  defaultValue[newVal]
+				this.updateSkuValueEvent()
+			}
+		},
 		methods:{
 			...mapMutations(['delSkuValue','updateSkuValue']),
+			// 重写修改规格卡片里面属性值的事件
+			updateSkuValueEvent(){
+				let keys = ['text', 'color', 'image']
+				this.item.value = this.item[keys[this.type]]
+				let url = "/admin/goods_skus_card_value/" + this.item.id
+				let obj = {...this.item}
+				this.axios.post(url,obj,{token: true})
+			},
+			// 重写删除规格卡片里面属性值的事件
+			delSkuValueEvent(){
+				this.$confirm(`是否删除属性"${this.item.text}"?`, '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+						let url = `/admin/goods_skus_card_value/${this.item.id}/delete`
+						let obj = {}
+						this.axios.post(url,obj,{token: true}).then(res=>{
+							let data = res.data.data
+							this.delValue()
+							this.$message({
+								type: 'success',
+								message: '删除成功!'
+							});
+						})
+					})
+			},
 			delValue(){
 				this.delSkuValue({cardIndex:this.index1,valueIndex:this.index2})
 			},
@@ -51,9 +86,10 @@
 					key: key,
 					value: value,
 				})
+				this.updateSkuValueEvent()
 			},
 			inputChange(e){
-				this.vModel('name', e.target.value)
+				this.vModel('text', e.target.value)
 			},
 			// 选择图片
 			chooseImage(){

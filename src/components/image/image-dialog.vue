@@ -282,7 +282,19 @@
 			},
 			// 选中图片
 			choose(item) {
-				// 选中
+				// 只能选一张
+				if (this.max === 1) {
+					// 取消之前选中
+					this.imageList.forEach(v=>v.isCheck = false)
+					// 重新设置选中项目
+					this.chooseList = [{ id: item.id, url: item.url }]
+					// 设置选中状态
+					item.isCheck = true
+					item.checkOrder = 1
+					return
+				}
+				
+				// 选多张 - 没被选中 - 选中它
 				if (!item.isCheck) {
 					// 限制选中数量
 					if(this.chooseList.length >= this.max){

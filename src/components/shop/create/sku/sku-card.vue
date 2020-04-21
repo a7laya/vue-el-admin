@@ -16,7 +16,7 @@
 			<!-- 下移 -->
 			<el-button :disabled="index === total - 1" icon="el-icon-bottom" size="mini" class="px-2" @click='sortCard("moveDown",index)'></el-button>
 			<!-- 删除 -->
-			<el-button type="text" size="mini" @click='delSkuCard(index)'>删除</el-button>
+			<el-button type="text" size="mini" @click='delSkuCardEvent'>删除</el-button>
 		</div>
 		<div class="card-body">
 			<!-- 规格属性列表 -->
@@ -26,7 +26,7 @@
 			</div>
 			<!-- 增加规格属性 -->
 			<div class="mt-2">
-				<el-button type="text" size="mini" icon="el-icon-plus" @click='addSkuValue(index)'>增加规格值
+				<el-button type="text" size="mini" icon="el-icon-plus" @click='addSkuValueEvent'>增加规格值
 				</el-button>
 			</div>
 		</div>
@@ -37,8 +37,10 @@
 	import { mapState,mapMutations } from 'vuex'
 	// 引入规格属性列表组件
 	import skuCardChildren from './sku-card-children.vue'
+	
+	let defaultValue = ['属性值', '#FFFFFF', '/assets/avatar.png']
 	export default {
-		inject: ['app'],
+		inject: ['app','layout'],
 		components: {skuCardChildren},
 		mounted() {
 			// 监听拖拽的结束
@@ -66,8 +68,66 @@
 		},
 		methods: {
 			...mapMutations(['sotrSkuValue','delSkuCard','vModelSkuCard','sortSkuCard','addSkuValue']),
+			// 重写添加规格卡片里面的规格值
+			addSkuValueEvent(){
+				let url = `/admin/goods_skus_card_value`
+				let obj = {
+					goods_skus_card_id: this.item.id, // 商品规格卡片id
+					name: this.item.name, // 商品规格卡片的名称
+					order: 50, // 排序
+					value: defaultValue[this.item.type], // 属性值
+				}
+				this.layout.showLoading()
+				this.axios.post(url,obj,{token: true}).then(res=>{
+					let data = res.data.data
+					data.text = defaultValue[0]
+					data.color = defaultValue[1]
+					data.image = defaultValue[2]
+					this.addSkuValue({
+						index: this.index,
+						data
+					})
+					console.log("data:",data)
+					this.layout.hideLoading()
+				}).catch(err => {
+					this.layout.hideLoading()
+				})
+			},
+			// 重写删除规格卡片
+			delSkuCardEvent(){
+				this.$confirm(`是否删除卡片"${this.item.name}"?`, '提示', {
+					confirmButtonText: '确定',
+					cancelButtonText: '取消',
+					type: 'warning'
+				}).then(() => {
+						let url = `/admin/goods_skus_card/${this.item.id}/delete`
+						let obj = {}
+						this.layout.showLoading()
+						this.axios.post(url,obj,{token: true}).then(res=>{
+							let data = res.data.data
+							this.delSkuCard(this.index)
+							this.$message({
+								type: 'success',
+								message: '删除成功!'
+							});
+							this.layout.hideLoading()
+						}).catch(err => {
+							this.layout.hideLoading()
+						})
+					})
+				
+			},
+			updataSkuCard(){
+				let url = `/admin/goods_skus_card/${this.item.id}`
+				let obj = {...this.item}
+				this.axios.post(url,obj,{token: true}).then(res=>{
+					console.log("updataSkuCard:",res)
+				})
+			},
 			vModel(key, index, value){
 				this.vModelSkuCard({key, index, value})
+				// 卡片值改变时，即更新skucard
+				this.updataSkuCard()
 			},
 			// 规格卡片排序
 			sortCard(action, index){

@@ -28,6 +28,10 @@ let routes = [
 					component: "shop/goods/create"
 				},
 				{	
+					meta: { title:"商品规格" },
+					component: "shop/goods/sku"
+				},
+				{	
 					meta: { title:"修改商品详情" },
 					component: "shop/goods/content"
 				},

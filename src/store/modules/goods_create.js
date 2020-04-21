@@ -26,37 +26,7 @@ export default {
 		volume: 0, // 体积
 		
 		// 多规格卡片
-		sku_card: [
-			{
-				name: "颜色", // 规格名称
-				type: 0,      // 规格类型 0无 1颜色 2图片
-				list:[        // 规格属性列表
-					{
-						name: '黄色', // 文字
-						color: '', // 颜色
-						image: '', // 图片
-					},{
-						name: '红色', // 文字
-						color: '', // 颜色
-						image: '', // 图片
-					},
-				]
-			},{
-				name: "尺寸", // 规格名称
-				type: 0,      // 规格类型 0无 1颜色 2图片
-				list:[        // 规格属性列表
-					{
-						name: 'SM', // 文字
-						color: '', // 颜色
-						image: '', // 图片
-					},{
-						name: 'XXL', // 文字
-						color: '', // 颜色
-						image: '', // 图片
-					},
-				]
-			},
-		],
+		sku_card: [],
 		
 		// 商品类型
 		goods_type_id: "", 
@@ -126,13 +96,8 @@ export default {
 			state[key] = value
 		},
 		// 增加规格卡片
-		addSkuCard(state){
-			state.sku_card.push({
-				name: "", // 规格名称
-				type: 0,      // 规格类型 0无 1颜色 2图片
-				list:[]       // 规格属性列表
-			}),
-			console.log("state.sku_card:",state.sku_card)
+		addSkuCard(state,data){
+			state.sku_card.push(data)
 		},
 		// 删除规格卡片
 		delSkuCard(state,index){
@@ -147,12 +112,8 @@ export default {
 			$Util[action](state.sku_card, index)
 		},
 		// 增加指定规格卡片的规格属性
-		addSkuValue(state, index){
-			state.sku_card[index].list.push({
-				name: '规格名称', // 文字
-				color: '', // 颜色
-				image: '', // 图片
-			})
+		addSkuValue(state, {index, data}){
+			state.sku_card[index].list.push(data)
 		},
 		// 删除指定规格卡片的规格属性
 		delSkuValue(state, {cardIndex, valueIndex}){

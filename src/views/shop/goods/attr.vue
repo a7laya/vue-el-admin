@@ -120,7 +120,7 @@
 					return {
 						goods_id: this.id,
 						value: '',
-						name: "属性名称",
+						name: item.name,
 						default: def,
 						type: item.type
 					}

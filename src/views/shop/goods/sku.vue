@@ -39,7 +39,7 @@
 					</el-input>
 				</el-form-item>
 				<el-form-item label="总库存">
-					<el-input type="number" :value="stock" @input="vModel('stock',$event)" placeholder="请输入总库存" class="w-25">
+					<el-input type="number" v-model="sku_value.stock" placeholder="请输入总库存" class="w-25">
 						<template slot='append'>件</template>
 					</el-input>
 				</el-form-item>
@@ -70,6 +70,7 @@
 				<el-form-item label="规格设置"><sku-table ref="table"></sku-table></el-form-item>
 			</el-form>
 		</div>
+		<el-button type="primary" style="position: fixed;bottom: 50px;right: 50px;" @click="submit">提交</el-button>
 	</div>
 </template>
 
@@ -126,6 +127,7 @@ export default {
 			token:true
 		}).then(res=>{
 			let data = res.data.data
+			console.log("data:",data)
 			this.vModel('sku_card',data.goodsSkusCard.map(item=>{
 				item.list = item.goodsSkusCardValue
 				item.list.map(v=>{
@@ -136,7 +138,8 @@ export default {
 				})
 				return item
 			}))
-			this.vModel('skus_type',data.sku_type)
+			this.vModel('sku_type',data.sku_type)
+			// 单一规格
 			this.sku_value = data.sku_value ? data.sku_value : {
 				oprice:0,
 				pprice:0,
@@ -149,7 +152,6 @@ export default {
 					this.$refs.table.list = data.goodsSkus
 				}
 			})
-			
 			this.layout.hideLoading()
 		}).catch(err=>{
 			this.layout.hideLoading()
@@ -248,6 +250,32 @@ export default {
 				});
 			});
 		},
+		submit(){
+			let list = []
+			if(this.$refs.table){
+				list = this.$refs.table.list.map(item=>{
+					item.goods_id = this.id
+					return item
+				})
+			}
+			this.layout.showLoading()
+			this.axios.post('/admin/goods/updateskus/'+this.id,{
+				sku_type:this.sku_type,
+				sku_value:this.sku_value,
+				goodsSkus:list
+			},{ token:true }).then(res=>{
+				this.$message({
+					type:"success",
+					message:"修改成功"
+				})
+				this.$router.push({
+					name:"shop_goods_list"
+				})
+				this.layout.hideLoading()
+			}).catch(err=>{
+				this.layout.hideLoading()
+			})
+		}
 	}
 };
 </script>

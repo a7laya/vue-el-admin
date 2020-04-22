@@ -46,7 +46,7 @@
 			</div>
 		</el-footer>
 		<!-- 新增 | 修改类型模态框 -->
-		<el-dialog title="添加类型" :visible.sync="createModel" top="5vh" width="80%">
+		<el-dialog :title="editIndex === -1 ? '添加类型' : '修改类型'" :visible.sync="createModel" top="5vh" width="80%">
 			<!-- 表单内容 -->
 			<el-form ref="form" :rules="rules" :model="form" label-width="80px">
 				<el-form-item label="类型名称" prop="name"><el-input v-model="form.name" placeholder="类型名称" size="mini" class="w-50"></el-input></el-form-item>

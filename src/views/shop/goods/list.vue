@@ -62,8 +62,8 @@
 				<template slot-scope="scope">
 					<!-- 未审核则显示这俩按钮 -->
 					<div v-if="!scope.row.ischeck">
-						<el-button plain type="success" size="mini" @click="scope.row.ischeck = 1">审核通过</el-button>
-						<el-button plain type="danger" size="mini" @click="scope.row.ischeck = 2" class="ml-0 mt-2">审核拒绝</el-button>
+						<el-button plain type="success" size="mini" @click="checkGoods(scope.row,1)">审核通过</el-button>
+						<el-button plain type="danger" size="mini" @click="checkGoods(scope.row,2)" class="ml-0 mt-2">审核拒绝</el-button>
 					</div>
 					<!-- 审核过之后 -->
 					<span v-else>{{scope.row.ischeck === 1 ? '已通过' : '已拒绝'}}</span>
@@ -80,12 +80,14 @@
 			<el-table-column label="操作" align="center">
 				<template slot-scope="scope">
 					<el-button type="text" size="mini" @click="navigate('shop_goods_create', scope.row.id)">基础设置</el-button>
-					<el-button type="text" size="mini" @click="navigate('shop_goods_sku', scope.row.id)">商品规格</el-button>
+					<el-button type="text" size="mini" 
+					:class="(scope.row.sku_type == 0 && !scope.row.sku_value) || (scope.row.sku_type == 1 && !scope.row.goods_skus.length) ? 'text-danger' : ''"
+					@click="navigate('shop_goods_sku', scope.row.id)">商品规格</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.goods_attrs.length ? 'text-danger' : ''" @click="navigate('shop_goods_attr', scope.row.id)">商品属性</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.goods_banner.length ? 'text-danger' : ''" @click="navigate('shop_goods_banner', scope.row.id)">媒体设置</el-button>
 					<el-button type="text" size="mini" :class="!scope.row.content ? 'text-danger' : ''" @click="navigate('shop_goods_content', scope.row.id)">商品详情</el-button>
 					<el-button type="text" size="mini">折扣设置</el-button>
-					<el-button type="text" size="mini">删除商品</el-button>
+					<el-button type="text" size="mini" @click="deleteItem(scope)">删除商品</el-button>
 				</template>
 			</el-table-column>
 		</el-table>
@@ -219,6 +221,25 @@
 					this.getList()
 					this.layout.hideLoading()
 				}).catch(err=>{
+					this.layout.hideLoading()
+				})
+			},
+			// 审核
+			checkGoods(item,ischeck){
+				let msg = ['保留审核状态','已通过审核','已拒绝审核']
+				let url = `/admin/goods/${item.id}/check`
+				let obj = {
+					ischeck 
+				}
+				this.layout.showLoading()
+				this.axios.post(url,obj,{token: true}).then(res=>{
+					this.getList()
+					this.$message({
+						type: 'success',
+						message: `"${item.title}"${msg[ischeck]}`
+					})
+					this.layout.hideLoading()
+				}).catch(err => {
 					this.layout.hideLoading()
 				})
 			}

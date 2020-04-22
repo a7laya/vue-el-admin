@@ -109,6 +109,7 @@ export default {
 		},
 		// 规格卡片排序
 		sortSkuCard(state, {action,index}){
+			console.log("state.sku_card:",state.sku_card)
 			$Util[action](state.sku_card, index)
 		},
 		// 增加指定规格卡片的规格属性

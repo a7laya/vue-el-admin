@@ -80,7 +80,7 @@ export default {
 					message: `${!id ? '添加' : '修改'}成功`,
 					type: 'success'
 				});
-				this.hideLoading()
+				// this.hideLoading()
 			}).catch(err => {
 				this.hideLoading()
 			})
